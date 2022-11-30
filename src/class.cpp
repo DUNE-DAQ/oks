@@ -1,14 +1,17 @@
 #define _OksBuildDll_
 
-#include <oks/class.h>
-#include <oks/xml.h>
-#include <oks/relationship.h>
-#include <oks/method.h>
-#include <oks/kernel.h>
-#include <oks/object.h>
-#include <oks/index.h>
-#include <oks/profiler.h>
-#include <oks/cstring.h>
+#include "oks/class.hpp"
+#include "oks/xml.hpp"
+#include "oks/relationship.hpp"
+#include "oks/method.hpp"
+#include "oks/kernel.hpp"
+#include "oks/object.hpp"
+#include "oks/index.hpp"
+#include "oks/profiler.hpp"
+#include "oks/cstring.hpp"
+
+#include "ers/ers.hpp"
+#include "logging/Logging.hpp"
 
 #include <stdlib.h>
 
@@ -16,7 +19,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-#include <ers/ers.h>
+
 
 const char OksClass::class_xml_tag[]        = "class";
 const char OksClass::name_xml_attr[]        = "name";
@@ -223,7 +226,7 @@ OksClass::~OksClass()
 {
   OSK_PROFILING(OksProfiler::ClassDestructor, p_kernel)
 
-  ERS_DEBUG( 2 , "destruct " << (p_transient ? "TRANSIENT" : "NORMAL") << " class \'" << get_name() << '\'' );
+    TLOG_DEBUG(2) << "destruct " << (p_transient ? "TRANSIENT" : "NORMAL") << " class \'" << get_name() << '\'' ;
 
   // ~OksIndex() removes 'SELF' from OksClass and deletes 'indices' when there is no an index in it
   while (p_indices)
@@ -1606,7 +1609,7 @@ OksClass::create_super_classes()
       }
     }
 
-    ERS_DEBUG(5, text.str());
+    TLOG_DEBUG(5) << text.str();
   }
 #endif
 }
@@ -1677,8 +1680,8 @@ OksClass::create_attributes()
 	  }
           else if( !p_kernel->p_silence ) {
             if(a1) {
-              ERS_DEBUG(1, "in class \'" << get_name() << "\' direct attribute \'" << a1->get_name() <<
-                           "\' overrides one coming from superclass \'" << a->p_class->get_name() << '\'');
+              TLOG_DEBUG(1) << "in class \'" << get_name() << "\' direct attribute \'" << a1->get_name() <<
+                           "\' overrides one coming from superclass \'" << a->p_class->get_name() << '\'';
               if(are_types_different(a1, a)) {
                 Oks::warning_msg("OksClass::create_attributes()")
                   << "  found attribute \'" << a->get_name() << "\' types conflict in class \'" << get_name() << "\':\n"
@@ -1694,8 +1697,8 @@ OksClass::create_attributes()
               }
             }
             else if(a2) { 
-              ERS_DEBUG(1, "in class \'" << get_name() << "\' attribute \'" << a2->get_name() <<
-                           "\' from superclass \'" << a2->p_class->get_name() << "\' overrides one coming from superclass \'" << a->p_class->get_name() << '\'');
+              TLOG_DEBUG(1) << "in class \'" << get_name() << "\' attribute \'" << a2->get_name() <<
+                           "\' from superclass \'" << a2->p_class->get_name() << "\' overrides one coming from superclass \'" << a->p_class->get_name() << '\'';
               if(are_types_different(a2, a)) {
                 Oks::warning_msg("OksClass::create_attributes()")
                   << "  found attribute \'" << a->get_name() << "\' types conflict in class \'" << get_name() << "\':\n"
@@ -1753,8 +1756,8 @@ OksClass::create_relationships()
 	  }
           else {
             if(r1) {
-              ERS_DEBUG(1, "in class \'" << get_name() << "\' direct relationship \'" << r1->get_name() <<
-                           "\' overrides one coming from superclass \'" << r->p_class->get_name() << '\'');
+              TLOG_DEBUG(1) << "in class \'" << get_name() << "\' direct relationship \'" << r1->get_name() <<
+                           "\' overrides one coming from superclass \'" << r->p_class->get_name() << '\'';
               if(r1->get_high_cardinality_constraint() != r->get_high_cardinality_constraint()) {
                 Oks::warning_msg("OksClass::create_relationships()")
                   << "  found relationship \'" << r->get_name() << "\' cardinality conflict in class \'" << get_name() << "\':\n"
@@ -1763,8 +1766,8 @@ OksClass::create_relationships()
               }
             }
             else if(r2) {
-              ERS_DEBUG(1, "in class \'" << get_name() << "\' relationship \'" << r2->get_name() <<
-                           "\' from superclass \'" << r2->p_class->get_name() << "\' overrides one coming from superclass \'" << r->p_class->get_name() << '\'');
+              TLOG_DEBUG(1) << "in class \'" << get_name() << "\' relationship \'" << r2->get_name() <<
+                           "\' from superclass \'" << r2->p_class->get_name() << "\' overrides one coming from superclass \'" << r->p_class->get_name() << '\'';
               if(r2->get_high_cardinality_constraint() != r->get_high_cardinality_constraint()) {
                 Oks::warning_msg("OksClass::create_relationships()")
                   << "  found relationship \'" << r->get_name() << "\' cardinality conflict in class \'" << get_name() << "\':\n"
@@ -2013,7 +2016,7 @@ OksClass::registrate_class(bool skip_registered)
   }
 
   if(!p_data_info->empty() && skip_registered) {
-    ERS_DEBUG( 4, "skip already registered " << get_name());
+    TLOG_DEBUG(4) << "skip already registered " << get_name();
     return;
   }
 

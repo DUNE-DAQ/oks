@@ -1,14 +1,16 @@
 #define _OksBuildDll_
 
-#include <oks/object.h>
-#include <oks/xml.h>
-#include <oks/attribute.h>
-#include <oks/relationship.h>
-#include <oks/class.h>
-#include <oks/kernel.h>
-#include <oks/cstring.h>
+#include "oks/object.hpp"
+#include "oks/xml.hpp"
+#include "oks/attribute.hpp"
+#include "oks/relationship.hpp"
+#include "oks/class.hpp"
+#include "oks/kernel.hpp"
+#include "oks/cstring.hpp"
 
-#include "oks_utils.h"
+#include "oks_utils.hpp"
+
+#include "logging/Logging.hpp"
 
 #include <string.h>
 #include <stdlib.h>
@@ -1990,7 +1992,7 @@ namespace oks
           << std::setw(2) << t.hour()
           << std::setw(2) << t.min()
           << std::setw(2) << t.sec();
-        ERS_DEBUG( 1 , "parse OKS time: " << t << " => " << text.str() );
+        TLOG_DEBUG( 1 ) << "parse OKS time: " << t << " => " << text.str() ;
 
         if(file_name)
           ers::warning(oks::DeprecatedFormat(ERS_HERE, file_name, value));
@@ -2028,7 +2030,7 @@ namespace oks
           << std::setw(4) << t.year()
           << std::setw(2) << (t.month() + 1)
           << std::setw(2) << t.day();
-        ERS_DEBUG( 1 , "parse OKS date: " << t << " => " << text.str() );
+        TLOG_DEBUG( 1 ) <<  "parse OKS date: " << t << " => " << text.str() ;
 
         Oks::warning_msg("oks str2date") << "The file is using deprecated OKS date format \"" << value << "\"\nPlease refresh it using an oks application.\nSupport for such format will be removed in a future release.\n";
 

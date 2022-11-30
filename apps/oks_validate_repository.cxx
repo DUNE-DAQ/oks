@@ -5,6 +5,16 @@
  *  Author: <Igor.Soloviev@cern.ch>
  */
 
+
+#include "oks/kernel.hpp"
+#include "oks/pipeline.hpp"
+#include "oks/exceptions.hpp"
+
+#include <boost/program_options.hpp>
+
+#include "ers/ers.hpp"
+#include "logging/Logging.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <vector>
@@ -12,20 +22,6 @@
 #include <filesystem>
 #include <mutex>
 
-#include <boost/program_options.hpp>
-
-#include <ers/ers.h>
-
-#include <daq_tokens/verify.h>
-
-#include <AccessManager/util/ErsIssues.h>
-#include <AccessManager/client/RequestorInfo.h>
-#include <AccessManager/client/ServerInterrogator.h>
-#include <AccessManager/xacml/impl/DBResource.h>
-
-#include <oks/kernel.h>
-#include <oks/pipeline.h>
-#include <oks/exceptions.h>
 
 enum __OksValidateRepositoryExitStatus__ {
   __Success__ = 0,
@@ -40,22 +36,6 @@ enum __OksValidateRepositoryExitStatus__ {
   __ExceptionCaught__
 };
 
-
-ERS_DECLARE_ISSUE( oks, TokenError, "Cannot verify daq token", ERS_EMPTY )
-
-static int
-report_am_error(const daq::am::Exception &ex)
-{
-  oks::log_timestamp(oks::Error) << "The Access Manager authorization failed:\n" << ex << std::endl;
-  return __AccessManagerAuthorizationFailed__;
-}
-
-static int
-report_am_no_permission(const std::string& user, const char* action, const std::string& path)
-{
-  oks::log_timestamp(oks::Error) << "Access Manager grants no permission for user " << user << " to " << action << " \'" << path << '\'' << std::endl;
-  return __AccessManagerNoPermission__;
-}
 
 std::string s_load_error;
 
@@ -248,7 +228,6 @@ main(int argc, char **argv)
 
   std::vector<std::string> created, updated, deleted;
   bool circular_dependency_between_includes_is_error = true;
-  bool use_am = true;
   bool verbose = false;
   std::string user;
   std::size_t pipeline_size = 4;
@@ -257,16 +236,13 @@ main(int argc, char **argv)
     {
       std::vector<std::string> app_types_list;
       std::vector<std::string> segments_list;
-      std::string token;
 
       desc.add_options()
         ("add,a", boost::program_options::value<std::vector<std::string> >(&created)->multitoken(), "list of new OKS files and directories to be added to the repository")
         ("update,u", boost::program_options::value<std::vector<std::string> >(&updated)->multitoken(), "list of new OKS files and directories to be updated in the repository")
         ("remove,r", boost::program_options::value<std::vector<std::string> >(&deleted)->multitoken(), "list of new OKS files and directories to be removed from the repository")
         ("permissive-circular-dependencies-between-includes,C", "downgrade severity of detected circular dependencies between includes from errors to warnings")
-        ("no-access-manager,A", "do not use the access manager")
         ("user,U", boost::program_options::value<std::string>(&user), "user id")
-        ("token,T", boost::program_options::value<std::string>(&token), "daq token to provide user id")
         ("threads-number,t", boost::program_options::value<std::size_t>(&pipeline_size)->default_value(pipeline_size), "number of threads used by validation pipeline")
         ("verbose,v", "Print debug information")
         ("help,h", "Print help message");
@@ -286,33 +262,8 @@ main(int argc, char **argv)
       if (vm.count("verbose"))
         verbose = true;
 
-      if (vm.count("no-access-manager"))
-        use_am = false;
-
       boost::program_options::notify(vm);
 
-      if (!token.empty())
-        {
-          if (!user.empty())
-            throw std::runtime_error("both \"user\" and \"token\" parameters cannot be used simultaneously");
-
-          auto start_usage = std::chrono::steady_clock::now();
-
-          try
-            {
-              user = daq::tokens::verify(token).get_subject();
-            }
-          catch(const ers::Issue& ex)
-            {
-              ers::fatal(oks::TokenError(ERS_HERE, ex));
-              return __UserAuthenticationFailure__;
-            }
-
-          oks::log_timestamp() << "verified daq token of user " << user << " in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
-        }
-
-      if (use_am && user.empty())
-        throw std::runtime_error("the \"user\" must be provided when the Acceess Manager is enabled");
     }
   catch (std::exception& ex)
     {
@@ -421,116 +372,7 @@ main(int argc, char **argv)
                 text << " - \"" << y << "\"\n";
             }
 
-          ERS_DEBUG(2, text.str());
-        }
-
-
-      // check AM permissions for given user
-
-      if (use_am)
-        {
-          start_usage = std::chrono::steady_clock::now();
-
-          daq::am::RequestorInfo * s_access_subject = new daq::am::RequestorInfo(user, OksKernel::get_host_name());
-          daq::am::ServerInterrogator si;
-
-          bool s_is_db_admin(false);
-
-            {
-              std::unique_ptr<const daq::am::DBResource> db_admin_res(daq::am::DBResource::getInstanceForAdminOperations());
-
-              try
-                {
-                  s_is_db_admin = si.isAuthorizationGranted(*db_admin_res, *s_access_subject);
-                }
-              catch (daq::am::Exception &ex)
-                {
-                  return report_am_error(ex);
-                }
-            }
-
-          ERS_DEBUG(1, "user " << user << " has db-admin privileges: " << std::boolalpha << s_is_db_admin);
-
-
-          if (s_is_db_admin == false)
-            {
-              // check permissions for created paths
-              for (const auto& x : created)
-                {
-                  if (directories.find(x) != directories.end())
-                    {
-                      ERS_DEBUG(1, "test permission to create directory \'" << x << "\'...");
-
-                      std::unique_ptr<const daq::am::DBResource> db_dir_res(daq::am::DBResource::getInstanceForDirectoryOperations(x, daq::am::DBResource::ACTION_ID_CREATE_SUBDIR));
-
-                      try
-                        {
-                          if (!si.isAuthorizationGranted(*db_dir_res, *s_access_subject))
-                            return report_am_no_permission(user, "create directory", x);
-                        }
-                      catch(daq::am::Exception &ex)
-                        {
-                          return report_am_error(ex);
-                        }
-
-                    }
-                  else
-                    {
-                      ERS_DEBUG(1, "test permission to create file \'" << x << "\'...");
-
-                      std::unique_ptr< const daq::am::DBResource > db_dir_res( daq::am::DBResource::getInstanceForDirectoryOperations(x, daq::am::DBResource::ACTION_ID_CREATE_FILE) );
-
-                      try
-                        {
-                          if (!si.isAuthorizationGranted(*db_dir_res, *s_access_subject))
-                            return report_am_no_permission(user, "create file", x);
-                        }
-                      catch(daq::am::Exception &ex)
-                        {
-                          return report_am_error(ex);
-                        }
-                    }
-                }
-
-              // check permissions for updated files
-              for (const auto& x : updated)
-                {
-                  ERS_DEBUG(1, "test permission to update file \'" << x << "\'...");
-
-                  std::unique_ptr< const daq::am::DBResource > db_file_res( daq::am::DBResource::getInstanceForFileOperations(x, daq::am::DBResource::ACTION_ID_UPDATE_FILE) );
-
-                  try
-                    {
-                      if(!si.isAuthorizationGranted(*db_file_res, *s_access_subject))
-                        return report_am_no_permission(user, "update file", x);
-                    }
-                  catch(daq::am::Exception &ex)
-                    {
-                      return report_am_error(ex);
-                    }
-                }
-
-              // process deleted files
-              // check permissions for deleted paths
-              for (const auto& x : deleted)
-                {
-                  ERS_DEBUG(1, "test permission to delete file \'" << x << "\'...");
-
-                  std::unique_ptr< const daq::am::DBResource > db_dir_res( daq::am::DBResource::getInstanceForDirectoryOperations(x, daq::am::DBResource::ACTION_ID_DELETE_FILE) );
-
-                  try
-                    {
-                      if (!si.isAuthorizationGranted(*db_dir_res, *s_access_subject))
-                        return report_am_no_permission(user, "delete file", x);
-                    }
-                  catch(daq::am::Exception &ex)
-                    {
-                      return report_am_error(ex);
-                    }
-                }
-            }
-
-          oks::log_timestamp() << "got Access Manager authorisation in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms\n";
+          TLOG_DEBUG(2) << text.str();
         }
 
       OksPipeline pipeline(pipeline_size);
@@ -568,19 +410,19 @@ main(int argc, char **argv)
                       if (file_includes.find(x) != file_includes.end())
                         {
                           found = true;
-                          ERS_DEBUG(1, "file \"" << f.first << "\" contains modified include \"" << x << '\"');
+                          TLOG_DEBUG(1) <<  "file \"" << f.first << "\" contains modified include \"" << x << '\"';
                           break;
                         }
 
                     if(found == false)
                       {
-                        ERS_DEBUG(1, "skip file \"" << f.first << '\"');
+                        TLOG_DEBUG(1) << "skip file \"" << f.first << '\"';
                         continue;
                       }
                   }
                 else
                   {
-                    ERS_DEBUG(1, "list of modified files contains file \"" << f.first << '\"');
+                    TLOG_DEBUG(1) <<  "list of modified files contains file \"" << f.first << '\"';
                   }
               }
 

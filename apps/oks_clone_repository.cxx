@@ -5,7 +5,7 @@
  *  Author: <Igor.Soloviev@cern.ch>
  */
 
-#include <oks/kernel.h>
+#include "oks/kernel.hpp"
 
 #include <string.h>
 #include <stdlib.h>

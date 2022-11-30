@@ -1,14 +1,14 @@
 #ifndef OKS_KERNEL_UTILS_H
 #define OKS_KERNEL_UTILS_H
 
-#include <map>
-#include <string>
+#include "config/map.hpp"
+#include "oks/exceptions.hpp"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 
-#include <config/map.h>
-#include <oks/exceptions.h>
+#include <map>
+#include <string>
 
 class OksClass;
 class OksObject;

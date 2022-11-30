@@ -9,16 +9,15 @@
  *
  */
 
+#include "oks/kernel.hpp"
+#include "oks/query.hpp"
+#include "oks/exceptions.hpp"
+
 #include <vector>
 #include <iostream>
 
 #include <string.h>
 #include <stdlib.h>
-
-#include <oks/kernel.h>
-#include <oks/query.h>
-#include <oks/exceptions.h>
-
 
 enum __OksDumpExitStatus__ {
   __Success__ = 0,

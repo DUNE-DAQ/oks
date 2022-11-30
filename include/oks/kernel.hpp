@@ -22,12 +22,12 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <oks/defs.h>
-#include <oks/xml.h>
-#include <oks/file.h>
-#include <oks/class.h>
-#include <oks/object.h>
-#include <oks/exceptions.h>
+#include "oks/defs.hpp"
+#include "oks/xml.hpp"
+#include "oks/file.hpp"
+#include "oks/class.hpp"
+#include "oks/object.hpp"
+#include "oks/exceptions.hpp"
 
 
   //
@@ -642,18 +642,18 @@ class OksKernel
     static std::string& get_user_name();
 
 
-      /**
-       *  \brief Validate user credentials (used by rdb and oksconfig).
-       *
-       *  PAM authentication is used.
-       *
-       *  \param user    - user name
-       *  \param passwd  - user password
-       *
-       *  \throw Throw std::exception in case of problems.
-       */
+    /*   /\** */
+    /*    *  \brief Validate user credentials (used by rdb and oksconfig). */
+    /*    * */
+    /*    *  PAM authentication is used. */
+    /*    * */
+    /*    *  \param user    - user name */
+    /*    *  \param passwd  - user password */
+    /*    * */
+    /*    *  \throw Throw std::exception in case of problems. */
+    /*    *\/ */
 
-    static void validate_credentials(const char * user, const char * passwd);
+    /* static void validate_credentials(const char * user, const char * passwd); */
 
 
       /**

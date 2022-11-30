@@ -1,11 +1,13 @@
 #define _OksBuildDll_
 
-#include <oks/attribute.h>
-#include <oks/xml.h>
-#include <oks/class.h>
-#include <oks/kernel.h>
-#include <oks/object.h>
-#include <oks/cstring.h>
+#include "oks/attribute.hpp"
+#include "oks/xml.hpp"
+#include "oks/class.hpp"
+#include "oks/kernel.hpp"
+#include "oks/object.hpp"
+#include "oks/cstring.hpp"
+
+#include "logging/Logging.hpp"
 
 #include <sstream>
 #include <stdexcept>
@@ -846,7 +848,7 @@ OksRange::reset(const std::string& range, OksAttribute * a)
             {
               if (is_star(token))
                 {
-                  ERS_DEBUG(2, "token \'" << token << "\' of \'" << range << "\' allows any value");
+                  TLOG_DEBUG(2) << "token \'" << token << "\' of \'" << range << "\' allows any value";
                   clear();
                   return;
                 }
@@ -873,7 +875,7 @@ OksRange::reset(const std::string& range, OksAttribute * a)
 
               if (mi && pi)
                 {
-                  ERS_DEBUG(2, "token \'" << token << "\' of \'" << range << "\' allows any value");
+                  TLOG_DEBUG(2) << "token \'" << token << "\' of \'" << range << "\' allows any value";
                   clear();
                   return;
                 }
@@ -888,7 +890,7 @@ OksRange::reset(const std::string& range, OksAttribute * a)
 
               if (token2.empty())
                 {
-                  ERS_DEBUG(2, "token \'" << token << "\' of \'" << range << "\' defines equality condition");
+                  TLOG_DEBUG(2) <<  "token \'" << token << "\' of \'" << range << "\' defines equality condition";
                   m_equal.emplace_back(d1);
                 }
               else
@@ -901,17 +903,17 @@ OksRange::reset(const std::string& range, OksAttribute * a)
 
                   if (mi)
                     {
-                      ERS_DEBUG(2, "token \'" << token << "\' of \'" << range << "\' defines smaller condition");
+                      TLOG_DEBUG(2) << "token \'" << token << "\' of \'" << range << "\' defines smaller condition";
                       m_less.emplace_back(d2);
                     }
                   else if (pi)
                     {
-                      ERS_DEBUG(2, "token \'" << token << "\' of \'" << range << "\' defines greater condition");
+                      TLOG_DEBUG(2) << "token \'" << token << "\' of \'" << range << "\' defines greater condition";
                       m_great.emplace_back(d1);
                     }
                   else
                     {
-                      ERS_DEBUG(2, "token \'" << token << "\' of \'" << range << "\' defines interval condition");
+                      TLOG_DEBUG(2) << "token \'" << token << "\' of \'" << range << "\' defines interval condition";
                       m_interval.emplace_back(d1, d2);
                     }
                 }

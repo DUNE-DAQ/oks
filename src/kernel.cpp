@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <wchar.h>
-#include <security/pam_appl.h>
+//#include <security/pam_appl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
@@ -21,29 +21,30 @@
 #include <cstring>
 #include <ctime>
 
-#include <ers/ers.h>
+#include "ers/ers.hpp"
+#include "logging/Logging.hpp"
 
-#include <system/Host.h>
-#include <system/User.h>
-#include <system/exceptions.h>
+#include "system/Host.hpp"
+#include "system/User.hpp"
+#include "system/exceptions.hpp"
 
-#include <daq_tokens/verify.h>
+//#include <daq_tokens/verify.h>
 
-#include <config/map.h>
+#include "config/map.hpp"
 
-#include <oks/kernel.h>
-#include <oks/xml.h>
-#include <oks/file.h>
-#include <oks/attribute.h>
-#include <oks/relationship.h>
-#include <oks/method.h>
-#include <oks/class.h>
-#include <oks/object.h>
-#include <oks/profiler.h>
-#include <oks/pipeline.h>
-#include <oks/cstring.h>
+#include "oks/kernel.hpp"
+#include "oks/xml.hpp"
+#include "oks/file.hpp"
+#include "oks/attribute.hpp"
+#include "oks/relationship.hpp"
+#include "oks/method.hpp"
+#include "oks/class.hpp"
+#include "oks/object.hpp"
+#include "oks/profiler.hpp"
+#include "oks/pipeline.hpp"
+#include "oks/cstring.hpp"
 
-#include "oks_utils.h"
+#include "oks_utils.hpp"
 
 std::mutex OksKernel::p_parallel_out_mutex;
 
@@ -264,7 +265,7 @@ namespace oks {
 
                 if (std::filesystem::is_directory(s_dir) == false)
                   {
-                    ERS_DEBUG(1, "directory " << s_dir << " does not exist");
+                    TLOG_DEBUG(1) << "directory " << s_dir << " does not exist";
                     s_dir.clear();
                   }
                 else
@@ -274,7 +275,7 @@ namespace oks {
 
                     if (available < 0.5)
                       {
-                        ERS_DEBUG(1, "usage of " << s_dir << " is " << static_cast<int>((1.0 - available) * 100.0) << "%, will use standard temporary path");
+                        TLOG_DEBUG(1) << "usage of " << s_dir << " is " << static_cast<int>((1.0 - available) * 100.0) << "%, will use standard temporary path";
                         s_dir.clear();
                       }
                   }
@@ -299,7 +300,8 @@ namespace oks {
 const char *
 OksKernel::GetVersion()
 {
-  return OKS_VERSION " built \"" __DATE__ "\"";
+  //return OKS_VERSION " built \"" __DATE__ "\"";
+  return "JCF, Oct-5-2022: please contact John Freeman at jcfree@fnal.gov or on Slack if you see this message";
 }
 
 
@@ -392,7 +394,7 @@ void
 OksKernel::set_user_repository_root(const std::string& path, const std::string& version)
 {
   if(get_repository_root().empty()) {
-    ERS_DEBUG( 1, "Failed to set user-repository-root:\n\tcaused by: repository-root is not set" );
+    TLOG_DEBUG( 1) << "Failed to set user-repository-root:\n\tcaused by: repository-root is not set" ;
     p_user_repository_root.clear();
     return;
   }
@@ -409,7 +411,7 @@ OksKernel::set_user_repository_root(const std::string& path, const std::string& 
     Oks::real_path(s, false);
   }
   catch(oks::exception& ex) {
-    ERS_DEBUG( 1, "Failed to set user-repository-root = \'" << s << "\':\n\tcaused by: " << ex.what() );
+    TLOG_DEBUG( 1) << "Failed to set user-repository-root = \'" << s << "\':\n\tcaused by: " << ex.what() ;
   }
 
   for(std::string::size_type idx = s.size()-1; idx > 0 && s[idx] == '/' ; idx--) {
@@ -604,7 +606,7 @@ Oks::real_path(std::string& path, bool ignore_errors)
   }
   else {
     if(ignore_errors) {
-      ERS_DEBUG( 3, "realpath(\'" << path << "\') has failed with code " << errno << ": \'" << oks::strerror(errno) << '\'' );
+      TLOG_DEBUG( 3) << "realpath(\'" << path << "\') has failed with code " << errno << ": \'" << oks::strerror(errno) << '\'' ;
       return false;
     }
     else {
@@ -723,7 +725,7 @@ OksKernel::get_cwd()
         s_cwd[1] = 0;
       }
 
-    ERS_DEBUG(1, "Current working dir: \'" << s_cwd << '\'');
+    TLOG_DEBUG(1) << "Current working dir: \'" << s_cwd << '\'';
   }
 
   return s_cwd;
@@ -846,7 +848,7 @@ OksKernel::OksKernel(bool sm, bool vm, bool tm, bool allow_repository, const cha
         if (!p_threads_pool_size)
           p_threads_pool_size = 2;
 
-        ERS_DEBUG(2, "Threads pool size: " << p_threads_pool_size);
+        TLOG_DEBUG(2) << "Threads pool size: " << p_threads_pool_size;
       }
     );
 
@@ -1417,7 +1419,7 @@ OksKernel::insert_repository_dir(const std::string& dir, bool push_back)
     }
   }
   catch(oks::exception& ex) {
-    ERS_DEBUG( 1, "Cannot insert repository dir \'" << dir << "\':\n\tcaused by: " << ex );
+    TLOG_DEBUG( 1) << "Cannot insert repository dir \'" << dir << "\':\n\tcaused by: " << ex ;
   }
 
   return "";
@@ -1557,7 +1559,7 @@ OksKernel::check_read_only(OksFile *fp)
       fp->p_is_read_only = (!f.good());
     }
 
-    ERS_DEBUG( 3, "read-only test on file \"" << s << "\" returns " << fp->p_is_read_only );
+    TLOG_DEBUG( 3) << "read-only test on file \"" << s << "\" returns " << fp->p_is_read_only ;
 
     if(!fp->p_is_read_only) {
       unlink(s.c_str());
@@ -1650,7 +1652,7 @@ token.push_back('/');                                                           
 token.append(file);                                                                                                         \
 Oks::substitute_variables(token);                                                                                           \
 if(Oks::real_path(token, true)) {                                                                                           \
-  ERS_DEBUG(2, fname << " returns \'" << token << "\' (filename relative to " << msg << " database repository directory)"); \
+  TLOG_DEBUG(2) << fname << " returns \'" << token << "\' (filename relative to " << msg << " database repository directory)"; \
   return token;                                                                                                             \
 }                                                                                                                           \
 else {                                                                                                                      \
@@ -1667,7 +1669,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
   const char _fname[] = "get_file_path";
   std::string fname;
 
-  ERS_DEBUG(2, "ENTER " << make_fname(_fname, sizeof(_fname)-1, s, nullptr, &file_h));
+  TLOG_DEBUG(2) << "ENTER " << make_fname(_fname, sizeof(_fname)-1, s, nullptr, &file_h);
 
   std::list<std::string> tested_files;
 
@@ -1704,7 +1706,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
               else if (s2.find(get_user_repository_root()) == 0)
                 {
                   // presumably from explicitly set TDAQ_DB_USER_REPOSITORY created externally
-                  ERS_DEBUG(2, fname << " returns external \'" << s2 << "\' (an absolute filename or relative to CWD=\'" << s_cwd << "\')");
+                  TLOG_DEBUG(2) << fname << " returns external \'" << s2 << "\' (an absolute filename or relative to CWD=\'" << s_cwd << "\')";
                   return s2;
                 }
 
@@ -1715,7 +1717,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
             }
           else
             {
-              ERS_DEBUG(2, fname << " returns \'" << s2 << "\' (an absolute filename or relative to CWD=\'" << s_cwd << "\')");
+              TLOG_DEBUG(2) << fname << " returns \'" << s2 << "\' (an absolute filename or relative to CWD=\'" << s_cwd << "\')";
               return s2;
             }
         }
@@ -1762,7 +1764,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
 
             if (Oks::real_path(s2, true))
               {
-                ERS_DEBUG(2, fname << " returns \'" << s2 << "\' (filename relative to parent file)");
+                TLOG_DEBUG(2) << fname << " returns \'" << s2 << "\' (filename relative to parent file)";
                 return s2;
               }
             else
@@ -1774,7 +1776,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
       }
   }
 
-  ERS_DEBUG(2, fname << " throw exception (file was not found)");
+  TLOG_DEBUG(2) << fname << " throw exception (file was not found)";
 
   std::ostringstream text;
   text << fname << " found no readable file among " << tested_files.size() << " tested:\n";
@@ -1950,7 +1952,7 @@ OksKernel::test_parent(OksFile * file, OksFile::IMap::iterator& i)
 
   if(includes.find(file) != includes.end()) {
     if(file->p_included_by != parent) {
-      ERS_DEBUG( 1 , "new parent of file " << file->get_full_file_name() << " is " << parent->get_full_file_name() );
+      TLOG_DEBUG( 1 ) << "new parent of file " << file->get_full_file_name() << " is " << parent->get_full_file_name() ;
       file->p_included_by = parent;
     }
 
@@ -2026,7 +2028,7 @@ OksKernel::k_close_dangling_includes()
 	    }
           }
 
-          ERS_DEBUG( 1 , "the parent of file " << i->second->get_full_file_name() << " is not valid" );
+          TLOG_DEBUG( 1 ) << "the parent of file " << i->second->get_full_file_name() << " is not valid" ;
 
 
             // try to find new parent
@@ -2039,7 +2041,7 @@ OksKernel::k_close_dangling_includes()
           }
 
           if(found_parent == false) {
-            ERS_DEBUG( 1 , "the file " << i->second->get_full_file_name() << " is not included by any other file and will be closed" );
+            TLOG_DEBUG( 1 ) << "the file " << i->second->get_full_file_name() << " is not included by any other file and will be closed" ;
             to_be_closed[c].push_back(i->second);
           }
         }
@@ -2061,16 +2063,16 @@ OksKernel::k_close_dangling_includes()
     }
 
     if(num > 0) {
-      ERS_DEBUG( 1 , "go into recursive call, number of potentially closed includes is " << num );
+      TLOG_DEBUG( 1 ) << "go into recursive call, number of potentially closed includes is " << num ;
     }
     else {
-      ERS_DEBUG( 1 , "break loop");
+      TLOG_DEBUG( 1 ) << "break loop";
       break;
     }
   }
   
   if(num_of_schema_files != schema_files().size()) {
-    ERS_DEBUG( 1 , "rebuild classes since number of schema files has been changed from " << num_of_schema_files << " to " << schema_files().size() );
+    TLOG_DEBUG( 1 ) << "rebuild classes since number of schema files has been changed from " << num_of_schema_files << " to " << schema_files().size() ;
     registrate_all_classes();
   }
 }
@@ -2122,7 +2124,7 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
         throw std::runtime_error(std::string("k_preload_includes(): failed to read header of file \"") + fp->get_full_file_name() + '\"');
       }
       else if(fp->p_oks_format == "schema") {
-        ERS_DEBUG(2, "skip reload of schema file \'" << fp->get_full_file_name() << '\'');
+        TLOG_DEBUG(2) << "skip reload of schema file \'" << fp->get_full_file_name() << '\'';
         return false;
       }
       else if(fp->p_oks_format != "data" && fp->p_oks_format != "extended" && fp->p_oks_format != "compact") {
@@ -2131,17 +2133,17 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
     }
 
     if(fp->p_list_of_include_files.size()) {
-      ERS_DEBUG(3, "check \'include\' of the file \'" << fp->get_full_file_name() << '\'');
+      TLOG_DEBUG(3) << "check \'include\' of the file \'" << fp->get_full_file_name() << '\'';
 
       if(included.size() != fp->p_list_of_include_files.size()) found_include_changes = true;
 
       for(std::list<std::string>::iterator i = fp->p_list_of_include_files.begin(); i != fp->p_list_of_include_files.end(); ++i) {
         std::set<std::string>::const_iterator x = included.find(*i);
 	if(x != included.end()) {
-	  ERS_DEBUG(3, "include \'" << *i << "\' already exists, skip...");
+	  TLOG_DEBUG(3) << "include \'" << *i << "\' already exists, skip...";
 	}
 	else {
-	  ERS_DEBUG(3, "the file \'" << *i << "\' was not previously included by \'" << fp->get_full_file_name() << '\'');
+	  TLOG_DEBUG(3) << "the file \'" << *i << "\' was not previously included by \'" << fp->get_full_file_name() << '\'';
 
 	  found_include_changes = true;
 
@@ -2156,13 +2158,13 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
 
           OksFile::Map::const_iterator j = p_schema_files.find(&full_file_name);
           if(j != p_schema_files.end()) {
-	    ERS_DEBUG(3, "the include \'" << *i << "\' is already loaded schema file \'" << j->first << '\'');
+	    TLOG_DEBUG(3) << "the include \'" << *i << "\' is already loaded schema file \'" << j->first << '\'';
 	    continue;
 	  }
 
           j = p_data_files.find(&full_file_name);
           if(j != p_data_files.end()) {
-	    ERS_DEBUG(3, "the include \'" << *i << "\' is already loaded data file \'" << j->first << '\'');
+	    TLOG_DEBUG(3) << "the include \'" << *i << "\' is already loaded data file \'" << j->first << '\'';
 	    continue;
 	  }
 
@@ -2171,12 +2173,12 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
 	      std::string new_schema_full_file_name = f->get_full_file_name();
 	      delete f;
 	      if(p_schema_files.find(&new_schema_full_file_name) != p_schema_files.end()) {
-	        ERS_DEBUG(3, "the include \'" << *i << "\' is a schema file, that was already loaded");
+	        TLOG_DEBUG(3) << "the include \'" << *i << "\' is a schema file, that was already loaded";
 		continue;
 	      }
 	      else {
 	        if(allow_schema_extension) {
-	          ERS_DEBUG(3, "the include \'" << *i << "\' is new schema file, loading...");
+	          TLOG_DEBUG(3) << "the include \'" << *i << "\' is new schema file, loading...";
 	          k_load_schema(*i, fp);
 	          continue;
 		}
@@ -2188,7 +2190,7 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
 	      }
 	    }
             else if(f->p_oks_format == "data" || f->p_oks_format == "extended" || f->p_oks_format == "compact") {
-	      ERS_DEBUG(3, "the include \'" << *i << "\' is new data file, pre-loading...");
+	      TLOG_DEBUG(3) << "the include \'" << *i << "\' is new data file, pre-loading...";
               add_data_file(f);
 	      p_preload_added_files.push_back(f);
 	      new_files_h.insert(f);
@@ -2806,7 +2808,7 @@ OksKernel::save_all_schema()
         k_save_schema(i->second);
       }
       else {
-        ERS_DEBUG(2, "skip read-only schema file \'" << *(i->first) << '\'');
+        TLOG_DEBUG(2) << "skip read-only schema file \'" << *(i->first) << '\'';
       }
 
     }
@@ -2834,11 +2836,11 @@ OksKernel::k_close_schema(OksFile * pf)
   OSK_PROFILING(OksProfiler::KernelCloseSchema, this)
 
   if(!pf) {
-    ERS_DEBUG(1, "enter for file (null)");
+    TLOG_DEBUG(1) << "enter for file (null)";
     return;
   }
   else {
-    ERS_DEBUG(2, "enter for file " << pf->p_full_name);
+    TLOG_DEBUG(2) << "enter for file " << pf->p_full_name;
   }
 
   if(p_active_schema == pf) p_active_schema = 0;
@@ -2879,13 +2881,13 @@ OksKernel::k_close_schema(OksFile * pf)
   remove_schema_file(pf);
   delete pf;
 
-  ERS_DEBUG(4, "exit for file " << (void *)pf);
+  TLOG_DEBUG(4) << "exit for file " << (void *)pf;
 }
 
 void
 OksKernel::close_all_schema()
 {
-  ERS_DEBUG(4, "enter");
+  TLOG_DEBUG(4) << "enter";
 
   {
     std::unique_lock lock(p_kernel_mutex);
@@ -2899,7 +2901,7 @@ OksKernel::close_all_schema()
     }
   }
 
-  ERS_DEBUG(4, "exit");
+  TLOG_DEBUG(4) << "exit";
 }
 
 void
@@ -2912,7 +2914,7 @@ OksKernel::set_active_schema(OksFile * f)
 void
 OksKernel::k_set_active_schema(OksFile * f)
 {
-  ERS_DEBUG(4, "enter for file " << (void *)f);
+  TLOG_DEBUG(4) << "enter for file " << (void *)f;
 
     // check if active schema is different from given file
 
@@ -2946,7 +2948,7 @@ OksKernel::k_set_active_schema(OksFile * f)
     throw oks::CanNotSetActiveFile("schema", f->get_full_file_name(), ex);
   }
 
-  ERS_DEBUG(4, "exit for file " << (void *)f);
+  TLOG_DEBUG(4) << "exit for file " << (void *)f;
 }
 
 std::list<OksClass *> *
@@ -3291,7 +3293,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
       clear_preload_file_info();
 
       if(!new_files.empty()) {
-        ERS_DEBUG(2, new_files.size() << " new files will be loaded");
+        TLOG_DEBUG(2) << new_files.size() << " new files will be loaded";
       }
 
       for(i = new_files.begin(); i != new_files.end(); ++i) {
@@ -3329,7 +3331,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
 
         for(OksFile::Map::iterator i = p_data_files.begin(); i != p_data_files.end(); ) {
           if(i->second->p_included_by && files_to_be_closed.find(i->second) == files_to_be_closed.end()) {
-            ERS_DEBUG(3, "check the file \'" << i->second->get_full_file_name() << "\' is included");
+            TLOG_DEBUG(3) << "check the file \'" << i->second->get_full_file_name() << "\' is included";
             const std::string& s = i->second->get_full_file_name();
             OksFile * f2 = i->second;
             ++i;
@@ -3352,7 +3354,11 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
 	        }
               }
 
-              ERS_DEBUG(3, "file \'" << f2->get_full_file_name() << " will be closed");
+              if (files_h.erase(f2)) {
+                TLOG_DEBUG(2) << "skip reload of updated file \'" << f2->get_full_file_name() << " since it will be closed";
+              }
+
+              TLOG_DEBUG(3) << "file \'" << f2->get_full_file_name() << " will be closed";
             }
           }
           else {
@@ -3369,7 +3375,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
       }
     }
     else {
-      ERS_DEBUG(2, "no changes in the list of includes");
+      TLOG_DEBUG(2) << "no changes in the list of includes";
     }
 
       // remove exclusive RCRs (will be restored when read, if object was not changed)
@@ -3467,7 +3473,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
 
         for(OksObject::FSet::iterator x = oset.begin(); x != oset.end(); ++x) {
 	  text << " - object " << *x << std::endl;
-          ERS_DEBUG(3, text.str());
+          TLOG_DEBUG(3) << text.str();
         }
       }
 #endif
@@ -3477,7 +3483,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
         unbind_all_rels(oset, refs);
         if(p_change_object_notify_fn) {
           for(OksObject::FSet::const_iterator x2 = refs.begin(); x2 != refs.end(); ++x2) {
-            ERS_DEBUG(3, "*** add object " << *x2 << " to the list of updated *** ");
+            TLOG_DEBUG(3) << "*** add object " << *x2 << " to the list of updated *** ";
             (*p_change_object_notify_fn)(*x2, p_change_object_notify_param);
           }
         }
@@ -3488,11 +3494,11 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
       OksObject * o = *ox;
 
       if(is_dangling(o)) {
-        ERS_DEBUG(4, "skip dangling object " << (void *)o);
+        TLOG_DEBUG(4) << "skip dangling object " << (void *)o;
         continue;
       }
 
-      ERS_DEBUG(3, "*** remove non-reloaded object " << o << " => " << (void *)o << " ***");
+      TLOG_DEBUG(3) << "*** remove non-reloaded object " << o << " => " << (void *)o << " ***";
 
       delete o;
     }
@@ -3538,7 +3544,7 @@ void
 OksKernel::restore_preload_file_info()
 {
   for(std::vector<OksFile *>::iterator j = p_preload_added_files.begin(); j != p_preload_added_files.end(); ++j) {
-    ERS_DEBUG( 1 , "remove file " << (*j)->get_full_file_name() );
+    TLOG_DEBUG( 1 ) << "remove file " << (*j)->get_full_file_name() ;
     remove_data_file(*j);
     delete *j;
   }
@@ -3546,7 +3552,7 @@ OksKernel::restore_preload_file_info()
   for(OksFile::Map::iterator i = p_data_files.begin(); i != p_data_files.end(); ++i) {
     std::map<const OksFile *, OksFile *>::iterator j = p_preload_file_info.find(i->second);
     if(j != p_preload_file_info.end()) {
-      ERS_DEBUG( 1 , "restore file " << i->second->get_full_file_name() );
+      TLOG_DEBUG( 1 ) << "restore file " << i->second->get_full_file_name() ;
       (*i->second) = (*j->second);
     }
   }
@@ -4161,7 +4167,7 @@ OksKernel::save_as_data(const std::string& new_name, OksFile * pf)
 void
 OksKernel::save_all_data()
 {
-  ERS_DEBUG(4, "enter");
+  TLOG_DEBUG(4) << "enter";
 
   {
     std::shared_lock lock(p_kernel_mutex);
@@ -4171,12 +4177,12 @@ OksKernel::save_all_data()
         k_save_data(i->second);
       }
       else {
-        ERS_DEBUG(2, "skip read-only data file \'" << *(i->first) << '\'');
+        TLOG_DEBUG(2) << "skip read-only data file \'" << *(i->first) << '\'';
       }
     }
   }
 
-  ERS_DEBUG(4, "exit");
+  TLOG_DEBUG(4) << "exit";
 }
 
   // user-allowed method
@@ -4244,7 +4250,7 @@ OksKernel::k_close_data(OksFile * fp, bool unbind)
 void
 OksKernel::close_all_data()
 {
-  ERS_DEBUG(4, "enter");
+  TLOG_DEBUG(4) << "enter";
 
   {
     std::unique_lock lock(p_kernel_mutex);
@@ -4273,7 +4279,7 @@ OksKernel::close_all_data()
     p_close_all = false;
   }
 
-  ERS_DEBUG(4, "exit");
+  TLOG_DEBUG(4) << "exit";
 }
 
 void
@@ -4286,7 +4292,7 @@ OksKernel::set_active_data(OksFile * fp)
 void
 OksKernel::k_set_active_data(OksFile * fp)
 {
-  ERS_DEBUG(4, "enter for file " << (void *)fp);
+  TLOG_DEBUG(4) << "enter for file " << (void *)fp;
 
 
     // check if active data is different from given file
@@ -4321,7 +4327,7 @@ OksKernel::k_set_active_data(OksFile * fp)
     throw oks::CanNotSetActiveFile("data", fp->get_full_file_name(), ex);
   }
 
-  ERS_DEBUG(4, "leave for file " << (void *)fp);
+  TLOG_DEBUG(4) << "leave for file " << (void *)fp;
 }
 
 
@@ -4369,7 +4375,7 @@ OksKernel::bind_objects()
 void
 OksKernel::k_bind_objects()
 {
-  ERS_DEBUG(4, "enter");
+  TLOG_DEBUG(4) << "enter";
 
   p_bind_objects_status.clear();
 
@@ -4387,7 +4393,7 @@ OksKernel::k_bind_objects()
           if(!p_bind_objects_status.empty()) p_bind_objects_status.push_back('\n');
             p_bind_objects_status.append(error_text);
 
-          ERS_DEBUG(1, error_text);
+	    TLOG_DEBUG(1) << error_text;
 	}
       }
     }
@@ -4397,7 +4403,7 @@ OksKernel::k_bind_objects()
     ers::warning(oks::kernel::BindError(ERS_HERE, p_bind_objects_status));
   }
 
-  ERS_DEBUG(4, "exit with status:\n" << p_bind_objects_status);
+  TLOG_DEBUG(4) << "exit with status:\n" << p_bind_objects_status;
 }
 
 
@@ -4424,7 +4430,7 @@ OksKernel::unbind_all_rels(const OksObject::FSet& rm_objs, OksObject::FSet& upda
               const OksClass * __c(d->data.OBJECT->GetClass());
               const OksString& __id(d->data.OBJECT->GetId());
               d->Set(__c,__id);
-              ERS_DEBUG(5, "set relationship of " << o << ": " << *d);
+              TLOG_DEBUG(5) << "set relationship of " << o << ": " << *d;
             }
           }
           else if(d->type == OksData::list_type) {
@@ -4436,7 +4442,7 @@ OksKernel::unbind_all_rels(const OksObject::FSet& rm_objs, OksObject::FSet& upda
                   const OksClass * __c(lid->data.OBJECT->GetClass());
                   const OksString& __id(lid->data.OBJECT->GetId());
 		  lid->Set(__c,__id);
-                  ERS_DEBUG(5, "set relationship of " << o << ": " << *d);
+                  TLOG_DEBUG(5) << "set relationship of " << o << ": " << *d;
                 }
               }
             }
@@ -4460,7 +4466,7 @@ OksKernel::find_class(const char * name) const
 void
 OksKernel::k_add(OksClass *c)
 {
-  ERS_DEBUG(4, "enter for class \"" << c->get_name() << '\"');
+  TLOG_DEBUG(4) << "enter for class \"" << c->get_name() << '\"';
 
   if(p_active_schema == 0) {
     throw oks::CannotAddClass(*c, "no active schema");
@@ -4489,7 +4495,7 @@ OksKernel::k_add(OksClass *c)
 void
 OksKernel::k_remove(OksClass *c)
 {
-  ERS_DEBUG(4, "enter for class \"" << c->get_name() << '\"');
+  TLOG_DEBUG(4) << "enter for class \"" << c->get_name() << '\"';
 
   if(OksClass::delete_notify_fn) (*OksClass::delete_notify_fn)(c);
 
@@ -4594,7 +4600,7 @@ OksKernel::registrate_all_classes(bool skip_registered)
           }
 	}
 
-	ERS_DEBUG(2, "Schema inheritance hierarchy used to test objects with equal IDs:\n" << s.str());
+	TLOG_DEBUG(2) << "Schema inheritance hierarchy used to test objects with equal IDs:\n" << s.str();
       }
 #endif
     }
@@ -4739,11 +4745,11 @@ ReposDirs::ReposDirs(const char * op, const char * cwd, OksKernel * kernel)
       throw oks::RepositoryOperationFailed(op, text.str());
     }
     p_dir = cwd;
-    ERS_DEBUG( 2 , "change cwd: \"" << p_user_repository_root << '\"' );
+    TLOG_DEBUG( 2 ) << "change cwd: \"" << p_user_repository_root << '\"' ;
   }
   else {
     p_dir = 0;
-    ERS_DEBUG( 2 , "cwd: \"" << p_user_repository_root << "\" is equal to target dir" );
+    TLOG_DEBUG( 2 ) << "cwd: \"" << p_user_repository_root << "\" is equal to target dir" ;
   }
 }
 
@@ -4754,7 +4760,7 @@ ReposDirs::~ReposDirs()
       Oks::error_msg("ReposDirs::~ReposDirs()")
         << "chdir (\'" << p_dir << "\') failed with code " << result << ": " << oks::strerror(errno) << std::endl;
     }
-    ERS_DEBUG( 2 , "restore cwd: \"" << p_dir  << '\"' );
+    TLOG_DEBUG( 2 ) << "restore cwd: \"" << p_dir  << '\"' ;
   }
 
   p_mutex.unlock();
@@ -5102,65 +5108,65 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   cmd.append(log_file_name);
   cmd.push_back('\'');
 
-  if (!credentials.empty())
-    {
-      try
-        {
-          auto token = daq::tokens::verify(credentials);
+  // if (!credentials.empty())
+  //   {
+  //     try
+  //       {
+  //         auto token = daq::tokens::verify(credentials);
 
-          const std::string author = token.get_subject();
+  //         const std::string author = token.get_subject();
 
-          std::string email;
+  //         std::string email;
 
-          if (token.has_payload_claim("email"))
-            email = token.get_payload_claim("email").as_string();
+  //         if (token.has_payload_claim("email"))
+  //           email = token.get_payload_claim("email").as_string();
 
-          if (email.empty())
-            email = author + '@' + get_domain_name();
+  //         if (email.empty())
+  //           email = author + '@' + get_domain_name();
 
-          System::User user(author);
+  //         System::User user(author);
 
-          cmd.append(" -n \'");
-          cmd.append(user.real_name());
-          cmd.append("\' -e \'");
-          cmd.append(email);
-          cmd.push_back('\'');
+  //         cmd.append(" -n \'");
+  //         cmd.append(user.real_name());
+  //         cmd.append("\' -e \'");
+  //         cmd.append(email);
+  //         cmd.push_back('\'');
 
-          static std::once_flag flag;
+  //         static std::once_flag flag;
 
-          std::call_once(flag, []()
-            {
-              const char * opt = " -o SendEnv=OKS_COMMIT_USER";
+  //         std::call_once(flag, []()
+  //           {
+  //             const char * opt = " -o SendEnv=OKS_COMMIT_USER";
 
-              std::string val;
+  //             std::string val;
 
-              if (const char * s = getenv("GIT_SSH_COMMAND"))
-                {
-                  if (strstr(s, opt) == nullptr)
-                    val = s;
-                }
-              else
-                {
-                  val = "ssh";
-                }
+  //             if (const char * s = getenv("GIT_SSH_COMMAND"))
+  //               {
+  //                 if (strstr(s, opt) == nullptr)
+  //                   val = s;
+  //               }
+  //             else
+  //               {
+  //                 val = "ssh";
+  //               }
 
-              if (!val.empty())
-                {
-                  val.append(opt);
-                  setenv("GIT_SSH_COMMAND", val.c_str(), 1);
-                }
-            }
-          );
+  //             if (!val.empty())
+  //               {
+  //                 val.append(opt);
+  //                 setenv("GIT_SSH_COMMAND", val.c_str(), 1);
+  //               }
+  //           }
+  //         );
 
-          setenv("OKS_COMMIT_USER", credentials.c_str(), 1);
-        }
-      catch(const ers::Issue& ex)
-        {
-          std::ostringstream text;
-          text << '\t' << ex;
-          throw oks::RepositoryOperationFailed("commit", text.str());
-        }
-    }
+  //         setenv("OKS_COMMIT_USER", credentials.c_str(), 1);
+  //       }
+  //     catch(const ers::Issue& ex)
+  //       {
+  //         std::ostringstream text;
+  //         text << '\t' << ex;
+  //         throw oks::RepositoryOperationFailed("commit", text.str());
+  //       }
+  //   }
 
   auto start_usage = std::chrono::steady_clock::now();
 
@@ -5611,102 +5617,102 @@ void OksKernel::get_updated_repository_files(std::set<std::string>& updated, std
 }
 
 
-  /* PAM authentication */
+//   /* PAM authentication */
 
-struct creds_pam_t {
-  const char * user;
-  const char * pwd;
-};
+// struct creds_pam_t {
+//   const char * user;
+//   const char * pwd;
+// };
 
-static int
-get_credentials_pam (int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr)
-{
-  struct creds_pam_t * creds = (struct creds_pam_t *)appdata_ptr;
-  struct pam_response * buf = (struct pam_response *)(malloc(num_msg * sizeof (struct pam_response)));    /* released by PAM */
+// static int
+// get_credentials_pam (int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr)
+// {
+//   struct creds_pam_t * creds = (struct creds_pam_t *)appdata_ptr;
+//   struct pam_response * buf = (struct pam_response *)(malloc(num_msg * sizeof (struct pam_response)));    /* released by PAM */
 
-  for(int k = 0; k < num_msg; ++ k) {
-    const size_t STRING_SIZE = 1024;
-    char * out;
-    int error = 0;
+//   for(int k = 0; k < num_msg; ++ k) {
+//     const size_t STRING_SIZE = 1024;
+//     char * out;
+//     int error = 0;
 
-    buf[k].resp = (char*)malloc(STRING_SIZE);
-    out = buf[k].resp;
-    out[0] = 0;
+//     buf[k].resp = (char*)malloc(STRING_SIZE);
+//     out = buf[k].resp;
+//     out[0] = 0;
 
-    if(msg[k]->msg) {
-      if(!strcmp(msg[k]->msg, "login:") || !strcmp(msg[k]->msg, "login: ")) {
-        ERS_DEBUG( 1 , "process \'login\' PAM credential of user " << creds->user );
-	strncpy(out, creds->user, STRING_SIZE);
-      }
-      else if(!strcmp(msg[k]->msg, "Password: ")  || !strcmp(msg[k]->msg, "LDAP Password: ")) {
-        ERS_DEBUG( 1 , "process \'password\' PAM credential of user " << creds->user );
-        strncpy (out, creds->pwd, STRING_SIZE);
-      }
-      else {
-        error = 1;
-      }
-    }
+//     if(msg[k]->msg) {
+//       if(!strcmp(msg[k]->msg, "login:") || !strcmp(msg[k]->msg, "login: ")) {
+//         TLOG_DEBUG( 1 ) << "process \'login\' PAM credential of user " << creds->user ;
+// 	strncpy(out, creds->user, STRING_SIZE);
+//       }
+//       else if(!strcmp(msg[k]->msg, "Password: ")  || !strcmp(msg[k]->msg, "LDAP Password: ")) {
+//         TLOG_DEBUG( 1 ) << "process \'password\' PAM credential of user " << creds->user ;
+//         strncpy (out, creds->pwd, STRING_SIZE);
+//       }
+//       else {
+//         error = 1;
+//       }
+//     }
 
-    if(error != 0) {
-      std::cerr << "ERROR: unexpected request in process PAM credential: " << msg[k]->msg << std::endl;
-      for (int j = 0; j <= k; ++ j) {
-        free(buf[k].resp);
-      }
-      free(buf);
-      return PAM_CONV_ERR;
-    }
+//     if(error != 0) {
+//       std::cerr << "ERROR: unexpected request in process PAM credential: " << msg[k]->msg << std::endl;
+//       for (int j = 0; j <= k; ++ j) {
+//         free(buf[k].resp);
+//       }
+//       free(buf);
+//       return PAM_CONV_ERR;
+//     }
 
-    out[STRING_SIZE - 1] = 0;
-    buf[k].resp_retcode = 0;
-  }
+//     out[STRING_SIZE - 1] = 0;
+//     buf[k].resp_retcode = 0;
+//   }
 
-  *resp = buf;
+//   *resp = buf;
 
-  return PAM_SUCCESS;
-}
+//   return PAM_SUCCESS;
+// }
 
 
-void
-OksKernel::validate_credentials(const char * user, const char * passwd)
-{
-  if(!user || !*user) {
-    throw oks::AuthenticationFailure("user name is not given");
-  }
+// void
+// OksKernel::validate_credentials(const char * user, const char * passwd)
+// {
+//   if(!user || !*user) {
+//     throw oks::AuthenticationFailure("user name is not given");
+//   }
 
-  if(!passwd || !*passwd) {
-    throw oks::AuthenticationFailure("user password is not given");
-  }
+//   if(!passwd || !*passwd) {
+//     throw oks::AuthenticationFailure("user password is not given");
+//   }
 
-  struct creds_pam_t creds = {user, passwd};
-  struct pam_conv conv = {get_credentials_pam, &creds};
+//   struct creds_pam_t creds = {user, passwd};
+//   struct pam_conv conv = {get_credentials_pam, &creds};
 
-  const char *service = "system-auth";
-  pam_handle_t * pamh = 0;
+//   const char *service = "system-auth";
+//   pam_handle_t * pamh = 0;
 
-  int retval = pam_start(service, 0, &conv, &pamh);
-  if (retval != PAM_SUCCESS) {
-    std::ostringstream text;
-    text << "pam_start() failed for service \'" << service << "\': " << pam_strerror (pamh, retval);
-    throw oks::AuthenticationFailure(text.str());
-  }
+//   int retval = pam_start(service, 0, &conv, &pamh);
+//   if (retval != PAM_SUCCESS) {
+//     std::ostringstream text;
+//     text << "pam_start() failed for service \'" << service << "\': " << pam_strerror (pamh, retval);
+//     throw oks::AuthenticationFailure(text.str());
+//   }
 
-  retval = pam_authenticate (pamh, 0);
-  if (retval == PAM_SUCCESS) {
-    ERS_DEBUG( 1 , "user " << user << " was authenticated" );
-  }
-  else {
-    std::ostringstream text;
-    text << "failed to authenticate user " << user << ": " << pam_strerror (pamh, retval);
-    throw oks::AuthenticationFailure(text.str());
-  }
+//   retval = pam_authenticate (pamh, 0);
+//   if (retval == PAM_SUCCESS) {
+//     TLOG_DEBUG( 1 ) << "user " << user << " was authenticated" ;
+//   }
+//   else {
+//     std::ostringstream text;
+//     text << "failed to authenticate user " << user << ": " << pam_strerror (pamh, retval);
+//     throw oks::AuthenticationFailure(text.str());
+//   }
 
-  retval = pam_end (pamh,retval);
-  if (retval != PAM_SUCCESS) {
-     std::ostringstream text;
-    text << "pam_end() failed: " << pam_strerror (pamh, retval);
-    throw oks::AuthenticationFailure(text.str());
-  }
-}
+//   retval = pam_end (pamh,retval);
+//   if (retval != PAM_SUCCESS) {
+//      std::ostringstream text;
+//     text << "pam_end() failed: " << pam_strerror (pamh, retval);
+//     throw oks::AuthenticationFailure(text.str());
+//   }
+// }
 
 void
 OksKernel::k_check_bind_classes_status() const noexcept

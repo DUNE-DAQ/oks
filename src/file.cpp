@@ -1,11 +1,11 @@
 #define _OksBuildDll_
 
-#include <oks/file.h>
-#include <oks/kernel.h>
-#include <oks/xml.h>
-#include <oks/cstring.h>
+#include "oks/file.hpp"
+#include "oks/kernel.hpp"
+#include "oks/xml.hpp"
+#include "oks/cstring.hpp"
 
-#include "oks_utils.h"
+#include "oks_utils.hpp"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -22,7 +22,8 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
 
-#include <ers/ers.h>
+#include "ers/ers.hpp"
+#include "logging/Logging.hpp"
 
     //
     // Define XML formats used to store OKS schema and data files
@@ -915,7 +916,7 @@ OksFile::check_repository()
 //    if(p_full_name.size() > len && p_full_name.substr(0, len) == OksKernel::get_repository_root()) {
 //      p_repository = GlobalRepository;
 //      p_repository_name = p_full_name.substr(len + 1);
-//      ERS_DEBUG( 3 , "file \'" << p_full_name << "\' comes from user repository [\'" << p_repository_name << "\']");
+//      TLOG_DEBUG( 3 ) << "file \'" << p_full_name << "\' comes from user repository [\'" << p_repository_name << "\']";
 //      return;
 //    }
 //  }
@@ -926,23 +927,23 @@ OksFile::check_repository()
 //      p_repository = UserRepository;
       p_repository_name = p_full_name.substr(len + 1);
 
-      ERS_DEBUG( 3 , "file \'" << p_full_name << "\' comes from user repository [\'" << p_repository_name << "\']" );
+      TLOG_DEBUG( 3 ) << "file \'" << p_full_name << "\' comes from user repository [\'" << p_repository_name << "\']" ;
       return;
 
 //      std::string repository_file = OksKernel::get_repository_root() + '/' + p_repository_name;
 //
 //      struct stat buf;
 //      if(stat(repository_file.c_str(), &buf) == 0) {
-//        ERS_DEBUG( 3 , "file \'" << p_full_name << "\' comes from user repository [\'" << p_repository_name << "\']" );
+//        TLOG_DEBUG( 3 ) << "file \'" << p_full_name << "\' comes from user repository [\'" << p_repository_name << "\']" ;
 //        return;
 //      }
 //      else {
-//        ERS_DEBUG( 3 , "file \'" << p_full_name << "\' is found in user repository [\'" << p_repository_name << "\'] but does not exist in global one [\'" << OksKernel::get_repository_root() << "\']" );
+//        TLOG_DEBUG( 3 ) << "file \'" << p_full_name << "\' is found in user repository [\'" << p_repository_name << "\'] but does not exist in global one [\'" << OksKernel::get_repository_root() << "\']" ;
 //      }
     }
   }
 
-  ERS_DEBUG( 3 , "file \'" << p_full_name << "\' is not in a repository" );
+  TLOG_DEBUG( 3 ) << "file \'" << p_full_name << "\' is not in a repository" ;
 //  p_repository = NoneRepository;
   p_repository_name.clear();
 }

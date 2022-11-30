@@ -10,9 +10,9 @@
 #ifndef OKS_OBJECT_H
 #define OKS_OBJECT_H
 
-#include <oks/defs.h>
-#include <oks/file.h>
-#include <oks/exceptions.h>
+#include "oks/defs.hpp"
+#include "oks/file.hpp"
+#include "oks/exceptions.hpp"
 
 #include <stdint.h>
 
@@ -22,7 +22,7 @@
 #include <map>
 #include <functional>
 
-#include <config/map.h>
+#include "config/map.hpp"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
@@ -430,7 +430,7 @@ operator<<(std::ostream& s, const OksString& str)
 }
 
 
-  // forward declaration for private OKS structures declared in non-installing src/oks_utils.h
+  // forward declaration for private OKS structures declared in non-installing src/oks_utils.hpp
 
 namespace oks {
   struct ReloadObjects;    ///< the structure for efficient search of objects to be re-read or to be deleted during reload

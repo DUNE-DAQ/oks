@@ -1,7 +1,7 @@
 #define _OksBuildDll_
 
-#include <oks/defs.h>
-#include "oks_utils.h"
+#include "oks/defs.hpp"
+#include "oks_utils.hpp"
 
 #include <stdlib.h>
 #include <time.h>

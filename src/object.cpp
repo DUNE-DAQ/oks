@@ -1,16 +1,16 @@
 #define _OksBuildDll_
 
-#include <oks/object.h>
-#include <oks/xml.h>
-#include <oks/attribute.h>
-#include <oks/relationship.h>
-#include <oks/class.h>
-#include <oks/kernel.h>
-#include <oks/index.h>
-#include <oks/profiler.h>
-#include <oks/cstring.h>
+#include "oks/object.hpp"
+#include "oks/xml.hpp"
+#include "oks/attribute.hpp"
+#include "oks/relationship.hpp"
+#include "oks/class.hpp"
+#include "oks/kernel.hpp"
+#include "oks/index.hpp"
+#include "oks/profiler.hpp"
+#include "oks/cstring.hpp"
 
-#include "oks_utils.h"
+#include "oks_utils.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,7 +20,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <ers/ers.h>
+#include "ers/ers.hpp"
+#include "logging/Logging.hpp"
 
   // names of xml tags and attributes (differed for compact and extended files)
 
@@ -438,7 +439,7 @@ OksObject::read(const oks::ReadFileParams& read_params)
     obj->create_notify();
 
     if(read_params.oks_kernel->get_verbose_mode()) {
-      ERS_DEBUG(3, "*** create object " << obj << " while reload data ***");
+      TLOG_DEBUG(3) << "*** create object " << obj << " while reload data ***";
     }
   }
 
@@ -1374,7 +1375,7 @@ OksObject::~OksObject()
 
     OSK_PROFILING(OksProfiler::ObjectDestructor, k)
 
-    ERS_DEBUG(4, "destroy object " << this);
+      TLOG_DEBUG(4) << "destroy object " << this;
 
     static std::mutex s_mutex;
     static std::set<OksObject *, std::less<OksObject *> > oset;
@@ -2142,7 +2143,7 @@ OksObject::SetRelationshipValue(const OksDataInfo *odi, OksData *d, bool skip_no
 
   for(const auto& i : removed_objs) {
     if(added_objs.find(i) == added_objs.end()) {
-      ERS_DEBUG(4, "object " << i << " was removed from relationship");
+      TLOG_DEBUG(4) << "object " << i << " was removed from relationship";
       i->remove_RCR(this, r);
     }
   }
@@ -2153,7 +2154,7 @@ OksObject::SetRelationshipValue(const OksDataInfo *odi, OksData *d, bool skip_no
   for(OksObject::FSet::const_iterator i = added_objs.begin(); i != added_objs.end(); ++i) {
     OksObject * add_obj = *i;
     if(removed_objs.find(add_obj) == removed_objs.end()) {
-      ERS_DEBUG(4, "object " << add_obj << " was added to relationship");
+      TLOG_DEBUG(4) << "object " << add_obj << " was added to relationship";
       try {
         add_obj->add_RCR(this, r);
       }
@@ -2574,7 +2575,7 @@ OksObject::add_RCR(OksObject *o, const OksRelationship *r)
 {
   if(r->get_is_composite() == false) return;
 
-  ERS_DEBUG(4, "object " << this << " adds RCR to object " << o << " throught relationship \"" << r->get_name() << '\"');
+  TLOG_DEBUG(4) << "object " << this << " adds RCR to object " << o << " throught relationship \"" << r->get_name() << '\"';
 
   if(!p_rcr) {
     p_rcr = new std::list<OksRCR *>();
@@ -2583,7 +2584,7 @@ OksObject::add_RCR(OksObject *o, const OksRelationship *r)
     for(const auto& i : *p_rcr) {
       if(i->relationship == r) {
 	if(i->obj == o) {
-	  ERS_DEBUG(4, "[this=" << this << ", o=" << o << ", r=\"" << r->get_name() << "\"]: such RCR was already set.");
+	  TLOG_DEBUG(4) << "[this=" << this << ", o=" << o << ", r=\"" << r->get_name() << "\"]: such RCR was already set.";
 	  return;
   	}
         else if(r->get_is_exclusive()) {
@@ -2600,7 +2601,7 @@ OksObject::add_RCR(OksObject *o, const OksRelationship *r)
 void
 OksObject::remove_RCR(OksObject *o, const OksRelationship *r) noexcept
 {
-  ERS_DEBUG(4, "object " << this << " removes RCR from object " << o << " through " << r->get_name());
+  TLOG_DEBUG(4) << "object " << this << " removes RCR from object " << o << " through " << r->get_name();
 
   if(r->get_is_composite() == false || !p_rcr) return;
 
@@ -3120,7 +3121,7 @@ OksObject::references(OksObject::FSet& refs, unsigned long recursion_depth, bool
 
   _references(this, recursion_depth, data);
 
-  ERS_DEBUG(2, "OksObject::references(" << this << ", " << recursion_depth << ") returns " << refs.size() << " objects");
+  TLOG_DEBUG(2) <<  "OksObject::references(" << this << ", " << recursion_depth << ") returns " << refs.size() << " objects";
 }
 
 

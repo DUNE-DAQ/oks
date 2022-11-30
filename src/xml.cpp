@@ -1,9 +1,9 @@
-#include <oks/xml.h>
-#include <oks/defs.h>
-#include <oks/exceptions.h>
-#include <oks/kernel.h>
-#include <oks/object.h>
-#include <oks/cstring.h>
+#include "oks/xml.hpp"
+#include "oks/defs.hpp"
+#include "oks/exceptions.hpp"
+#include "oks/kernel.hpp"
+#include "oks/object.hpp"
+#include "oks/cstring.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -13,8 +13,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <ers/ers.h>
-
+#include "ers/ers.hpp"
+#include "logging/Logging.hpp"
 
 OksXmlTokenPool OksXmlInputStream::s_tokens_pool;
 
@@ -493,7 +493,7 @@ OksXmlInputStream::get_tag_start()
       }
 
       get_token5(' ', '>', '\t', '\n', '\r', *m_v1);
-      ERS_DEBUG(8, "read tag \'" << m_v1->m_buf << '\'');
+      TLOG_DEBUG(8) << "read tag \'" << m_v1->m_buf << '\'';
 
       if( __builtin_expect((oks::cmp_str3n(m_v1->m_buf, "!--")), 0) ) {
         char buf[3] = {0, 0, 0};
@@ -564,7 +564,7 @@ OksXmlAttribute::OksXmlAttribute(OksXmlInputStream& s) : p_name(*s.m_v1), p_valu
 
     p_value_len = s.get_token('\"', p_value);
 
-    ERS_DEBUG(8, "read attribute \'" << m_buf_ptr << "\' and value \'" << p_value.m_buf << '\'');
+    TLOG_DEBUG(8) << "read attribute \'" << m_buf_ptr << "\' and value \'" << p_value.m_buf << '\'';
   }
   catch(std::exception& ex) {
     throw oks::BadFileData(std::string(ex.what()) + " when read xml attribute started at", start_line_no, start_line_pos);
