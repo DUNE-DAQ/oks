@@ -300,8 +300,7 @@ namespace oks {
 const char *
 OksKernel::GetVersion()
 {
-  //return OKS_VERSION " built \"" __DATE__ "\"";
-  return "JCF, Oct-5-2022: please contact John Freeman at jcfree@fnal.gov or on Slack if you see this message";
+  return "862f2957270";
 }
 
 
