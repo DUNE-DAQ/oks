@@ -24,9 +24,9 @@
 #include "ers/ers.hpp"
 #include "logging/Logging.hpp"
 
-#include "system/Host.hpp"
-#include "system/User.hpp"
-#include "system/exceptions.hpp"
+#include "okssystem/Host.hpp"
+#include "okssystem/User.hpp"
+#include "okssystem/exceptions.hpp"
 
 //#include <daq_tokens/verify.h>
 
@@ -258,7 +258,7 @@ namespace oks {
           {
             if (!getenv("OKS_GIT_NO_VAR_DIR"))
               {
-                System::User myself;
+                OksSystem::User myself;
 
                 s_dir = "/var/run/user/";
                 s_dir.append(std::to_string(myself.identity()));
@@ -437,7 +437,7 @@ OksKernel::get_host_name()
 
   std::call_once(flag, []()
     {
-      s_host_name = System::LocalHost::instance()->full_local_name();
+      s_host_name = OksSystem::LocalHost::instance()->full_local_name();
 
       if (s_host_name.empty())
         s_host_name = "unknown.host";
@@ -476,7 +476,7 @@ OksKernel::get_user_name()
 
   std::call_once(flag, []()
     {
-      System::User myself;
+      OksSystem::User myself;
       s_user_name = myself.name_safe();
 
       if (s_user_name.empty())
@@ -5123,7 +5123,7 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   //         if (email.empty())
   //           email = author + '@' + get_domain_name();
 
-  //         System::User user(author);
+  //         OksSystem::User user(author);
 
   //         cmd.append(" -n \'");
   //         cmd.append(user.real_name());
