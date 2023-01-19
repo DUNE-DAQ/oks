@@ -1,3 +1,5 @@
+**_JCF, Jan-18-2023: the documentation below this line is the original README.md contents of the oks repo from ATLAS. For the documentation of the OKS suite for DUNE DAQ, please go [here](https://github.com/DUNE-DAQ/dal/blob/develop/docs/README.md)_**
+
 The OKS (Object Kernel Support) is a library to support a simple active persistent in-memory object manager. It is suitable for applications which need to create persistent structured information with fast access but do not require full database functionality. 
 
 OKS is based on an object model that supports objects, classes, associations, methods, data abstraction, inheritance, polymorphism, object identifiers, composite objects, integrity constraints, schema evolution, data migration and active notification. OKS stores the class definitions and their instances in XML files (which can be used across different platforms). It provides query facilities. The OKS has C++ API and includes Motif based GUI applications to design class schema and to manipulate objects.
