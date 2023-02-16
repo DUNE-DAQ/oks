@@ -4,7 +4,7 @@
 include(CMakeFindDependencyMacro)
 
 find_dependency(Boost COMPONENTS thread date_time regex program_options)
-find_dependency(config)
+find_dependency(oksdbinterfaces)
 find_dependency(ers)
 find_dependency(logging)
 find_dependency(okssystem)

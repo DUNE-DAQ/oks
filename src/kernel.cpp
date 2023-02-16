@@ -30,7 +30,7 @@
 
 //#include <daq_tokens/verify.h>
 
-#include "config/map.hpp"
+#include "oksdbinterfaces/map.hpp"
 
 #include "oks/kernel.hpp"
 #include "oks/xml.hpp"
@@ -3182,17 +3182,17 @@ static bool _find_file(const OksFile::Map & files, const OksFile * f)
 void
 oks::ReloadObjects::put(OksObject * o)
 {
-  config::map<OksObject *> *& c = data[o->uid.class_id];
-  if(!c) c = new config::map<OksObject *>();
+  oksdbinterfaces::map<OksObject *> *& c = data[o->uid.class_id];
+  if(!c) c = new oksdbinterfaces::map<OksObject *>();
   (*c)[o->GetId()] = o;
 }
 
 OksObject *
 oks::ReloadObjects::pop(const OksClass* c, const std::string& id)
 {
-  std::map< const OksClass *, config::map<OksObject *> * >::iterator i = data.find(c);
+  std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * >::iterator i = data.find(c);
   if(i != data.end()) {
-    config::map<OksObject *>::iterator j = i->second->find(id);
+    oksdbinterfaces::map<OksObject *>::iterator j = i->second->find(id);
     if(j != i->second->end()) {
       OksObject * o = j->second;
       i->second->erase(j);
@@ -3209,7 +3209,7 @@ oks::ReloadObjects::pop(const OksClass* c, const std::string& id)
 
 oks::ReloadObjects::~ReloadObjects()
 {
-  for(std::map< const OksClass *, config::map<OksObject *> * >::iterator i = data.begin(); i != data.end(); ++i) {
+  for(std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * >::iterator i = data.begin(); i != data.end(); ++i) {
     delete i->second;
   }
 }
@@ -3380,11 +3380,11 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
       // remove exclusive RCRs (will be restored when read, if object was not changed)
 
     {
-      for(std::map< const OksClass *, config::map<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
+      for(std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
         const OksClass * c(cx->first);
 	if(c->p_all_relationships && !c->p_all_relationships->empty()) {
 	  const unsigned int atts_num(c->number_of_all_attributes());
-	  for(config::map<OksObject *>::const_iterator j = cx->second->begin(); j != cx->second->end(); ++j) {
+	  for(oksdbinterfaces::map<OksObject *>::const_iterator j = cx->second->begin(); j != cx->second->end(); ++j) {
 	    OksObject * obj = j->second;
             OksData * d(obj->data + atts_num);
 
@@ -3459,8 +3459,8 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
     OksObject::FSet oset;
 
     {
-      for(std::map< const OksClass *, config::map<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
-        for(config::map<OksObject *>::const_iterator ox = cx->second->begin(); ox != cx->second->end(); ++ox) {
+      for(std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
+        for(oksdbinterfaces::map<OksObject *>::const_iterator ox = cx->second->begin(); ox != cx->second->end(); ++ox) {
 	  oset.insert(ox->second);
 	}
       }

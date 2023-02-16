@@ -1,7 +1,7 @@
 #ifndef OKS_KERNEL_UTILS_H
 #define OKS_KERNEL_UTILS_H
 
-#include "config/map.hpp"
+#include "oksdbinterfaces/map.hpp"
 #include "oks/exceptions.hpp"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -28,7 +28,7 @@ namespace oks {
     // the structure for efficient search of objects to be re-read or to be deleted during reload
 
   struct ReloadObjects {
-    std::map< const OksClass *, config::map<OksObject *> * > data;
+    std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * > data;
     std::vector<OksObject *> created;
 
     ~ReloadObjects();
