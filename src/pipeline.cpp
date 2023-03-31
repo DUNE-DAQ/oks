@@ -7,6 +7,9 @@
 #include "oks/pipeline.hpp"
 #include <boost/bind/bind.hpp>
 
+namespace dunedaq {
+namespace oks {
+
 bool
 OksPipeline::Worker::setJob( OksJob * job )
 {
@@ -135,3 +138,6 @@ OksPipeline::getJob( OksJob* & job )
     }
     return false;
 }
+
+} // namespace oks
+} // namespace dunedaq

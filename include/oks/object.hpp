@@ -32,6 +32,9 @@
 #include <unordered_set>
 
 
+namespace dunedaq {
+namespace oks {
+
 
   /// Forward declarations
 
@@ -52,8 +55,6 @@ struct  OksXmlValue;
 struct  OksXmlRelValue;
 
   /// @addtogroup oks
-
-namespace oks {
 
   class QueryPathExpression;
   class QueryPath;
@@ -330,7 +331,7 @@ namespace oks {
 
   };
 
-}
+
 
     /// Struct OKS data information.
     /**
@@ -432,10 +433,8 @@ operator<<(std::ostream& s, const OksString& str)
 
   // forward declaration for private OKS structures declared in non-installing src/oks_utils.hpp
 
-namespace oks {
   struct ReloadObjects;    ///< the structure for efficient search of objects to be re-read or to be deleted during reload
   struct ReadFileParams;   ///< the structure to pass common parameters to various read() methods of OksData and OksObject class
-}
 
 
     /// Struct OKS data.
@@ -778,7 +777,6 @@ struct OksRCR {
 
 };
 
-namespace oks {
   struct hash_str
   {
     inline size_t operator() ( const std::string * x ) const {
@@ -822,7 +820,6 @@ namespace oks {
   };
   
   typedef std::unordered_set<const OksClass *, oks::hash_class_ptr, oks::equal_class_ptr> ClassSet;
-}
 
 
   /**
@@ -1539,5 +1536,7 @@ class OksObject
 
 };
 
+} // namespace oks
+} // namespace dunedaq
 
 #endif

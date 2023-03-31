@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+namespace dunedaq {
 namespace oks {
 
   inline bool cmp_str1(const char * s1, const char s2[2]) {
@@ -97,6 +98,7 @@ namespace oks {
     return cmp_str7(s1,s2) && cmp_str7(s1+8,s2+8) && (s1[16] == 0);
   }
 
-}
+} // namespace oks
+} // namespace dunedaq
 
 #endif

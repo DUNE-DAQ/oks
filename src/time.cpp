@@ -9,6 +9,9 @@
 #include <iomanip>
 #include <sstream>
 
+namespace dunedaq {
+namespace oks {
+
     //
     // The method converts string 's' to time
     // It is expected that the 's' is in the
@@ -16,7 +19,7 @@
     //
 
 void
-oks::Date::set(const char * s)
+Date::set(const char * s)
 {
   p_tm.tm_sec = p_tm.tm_min = p_tm.tm_hour = p_tm.tm_mday = p_tm.tm_mon = p_tm.tm_year = 0;
 
@@ -130,7 +133,7 @@ oks::Date::set(const char * s)
 
 
 std::string
-oks::Date::str() const
+Date::str() const
 {
   std::ostringstream s;
 
@@ -141,9 +144,9 @@ oks::Date::str() const
 }
 
 std::string
-oks::Time::str() const
+Time::str() const
 {
-  std::string ds = oks::Date::str();
+  std::string ds = Date::str();
 
   std::ostringstream s;
 
@@ -156,7 +159,7 @@ oks::Time::str() const
 }
 
 
-std::ostream& oks::operator<<(std::ostream& s, const oks::Date& d)
+std::ostream& operator<<(std::ostream& s, const Date& d)
 {
   std::string str = d.str();
   s << str;
@@ -164,7 +167,7 @@ std::ostream& oks::operator<<(std::ostream& s, const oks::Date& d)
 }
 
 
-std::ostream& oks::operator<<(std::ostream& s, const oks::Time& t)
+std::ostream& operator<<(std::ostream& s, const Time& t)
 {
   std::string str = t.str();
   s << str;
@@ -207,3 +210,6 @@ Oks::Tokenizer::next(std::string& token)
   p_idx = p_string.find_first_not_of(p_delimeters, end_idx);
   return true;
 }
+
+} // namespace oks
+} // namespace dunedaq

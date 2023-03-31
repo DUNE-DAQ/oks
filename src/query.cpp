@@ -12,6 +12,9 @@
 #include <stdexcept>
 #include <sstream>
 
+namespace dunedaq {
+namespace oks {
+
 const char * OksQuery::OR = "or";
 const char * OksQuery::AND = "and";
 const char * OksQuery::NOT = "not";
@@ -30,8 +33,6 @@ const char * OksQuery::PATH_TO = "path-to";
 const char * OksQuery::DIRECT = "direct";
 const char * OksQuery::NESTED = "nested";
 
-namespace oks {
-
   std::string
   QueryFailed::fill(const OksQueryExpression& query, const OksClass& c, const std::string& reason) noexcept
   {
@@ -46,7 +47,6 @@ namespace oks {
     return std::string("failed to create reqular expression \"") + what + "\": " + reason;
   }
 
-}
 
 bool OksQuery::equal_cmp(const OksData *d1, const OksData *d2) {return (*d1 == *d2);}
 bool OksQuery::not_equal_cmp(const OksData *d1, const OksData *d2) {return (*d1 != *d2);}
@@ -1209,3 +1209,6 @@ oks::QueryPathExpression::QueryPathExpression(const std::string& str) : p_next(0
     throw oks::bad_query_syntax(std::string("Expression \'") + str + "\' must be enclosed by brackets");
   }
 }
+
+} // namespace oks
+} // namespace dunedaq

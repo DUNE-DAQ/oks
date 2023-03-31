@@ -25,6 +25,16 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 
+namespace dunedaq {
+ERS_DECLARE_ISSUE(
+  oks,
+  DeprecatedFormat,
+  "the file " << file << " contains OKS time data stored in deprecated format \'" << data << "\'. Please refresh it using an oks application. Support for such format will be removed in a future release.",
+  ((const char *)file)
+  ((const char *)data)
+)
+
+namespace oks {
   // ugly reinterpret staff to convert date and time to integers
 
 void OksData::SetFast(boost::gregorian::date d)
@@ -447,9 +457,6 @@ OksData::Clear()
   type = unknown_type;
 }
 
-
-namespace oks {
-
   std::string
   AttributeRangeError::fill(const OksData * d, const std::string& range)
   {
@@ -490,8 +497,6 @@ namespace oks {
     return s.str();
   }
 
-}
-
 
 void
 OksData::check_range(const OksAttribute * a) const
@@ -513,7 +518,7 @@ OksData::check_range(const OksAttribute * a) const
     {
       if (a->p_range_obj->validate(*this) == false)
         {
-          throw oks::AttributeRangeError(this, a->get_range());
+          throw AttributeRangeError(this, a->get_range());
         }
     }
 }
@@ -538,7 +543,7 @@ OksData::SetNullValue(const OksAttribute * a)
     case class_type:   data.CLASS       = a->p_class;                               return;  // some class
     case date_type:    SetFast(boost::gregorian::day_clock::universal_day());       return;
     case time_type:    SetFast(boost::posix_time::second_clock::universal_time());  return;
-    default:           Clear2(); throw oks::AttributeReadError("", "non-attribute-type", "internal OKS error");
+    default:           Clear2(); throw AttributeReadError("", "non-attribute-type", "internal OKS error");
   }
 }
 
@@ -554,7 +559,7 @@ OksData::SetValue(const char * s, const OksAttribute * a)
       case s8_int_type:  data.S8_INT      = static_cast<int8_t>(strtol(s, 0, 0));     return;
       case u8_int_type:  data.U8_INT      = static_cast<uint8_t>(strtoul(s, 0, 0));   return;
       case bool_type:    switch(strlen(s)) {
-                           case 4: data.BOOL = (oks::cmp_str4n(s, "true") || oks::cmp_str4n(s, "TRUE") ||  oks::cmp_str4n(s, "True")); return;
+                           case 4: data.BOOL = (cmp_str4n(s, "true") || cmp_str4n(s, "TRUE") ||  cmp_str4n(s, "True")); return;
                            case 1: data.BOOL = (*s == 't' || *s == 'T' || *s == '1'); return;
                            default: data.BOOL = false; return;
                          }
@@ -572,7 +577,7 @@ OksData::SetValue(const char * s, const OksAttribute * a)
                            data.ENUMERATION = a->get_enum_value(s, strlen(s));        return;
                          }
                          catch(std::exception& ex) {
-                           throw oks::AttributeReadError(s, "enum", ex.what());
+                           throw AttributeReadError(s, "enum", ex.what());
                          }
       case date_type:    try {
                            if(strchr(s, '-') || strchr(s, '/')) {
@@ -583,7 +588,7 @@ OksData::SetValue(const char * s, const OksAttribute * a)
                            }
                          }
                          catch(std::exception& ex) {
-                           throw oks::AttributeReadError(s, "date", ex.what());
+                           throw AttributeReadError(s, "date", ex.what());
                          }
       case time_type:    try {
                            if(strlen(s) == 15 && s[8] == 'T') {
@@ -594,15 +599,15 @@ OksData::SetValue(const char * s, const OksAttribute * a)
                            }
                          }
                          catch(std::exception& ex) {
-                           throw oks::AttributeReadError(s, "time", ex.what());
+                           throw AttributeReadError(s, "time", ex.what());
                          }
       case class_type:   if(OksClass * c = a->p_class->get_kernel()->find_class(s)) {
                            data.CLASS = c;                                            return;
                          }
                          else {
-                           Clear2(); throw oks::AttributeReadError(s, "class", "the value is not a name of valid OKS class");
+                           Clear2(); throw AttributeReadError(s, "class", "the value is not a name of valid OKS class");
                          }
-      default:           Clear2(); throw oks::AttributeReadError(s, "non-attribute-type", "internal OKS error");
+      default:           Clear2(); throw AttributeReadError(s, "non-attribute-type", "internal OKS error");
     }
   }
 
@@ -742,12 +747,12 @@ OksXmlInputStream::get_num_token(char __last)
   }
   catch(std::exception& ex) {
     m_cvt_char->m_buf[pos] = '\0';
-    throw oks::BadFileData(std::string("failed to read numeric value: ") + ex.what(), line_no, line_pos);
+    throw BadFileData(std::string("failed to read numeric value: ") + ex.what(), line_no, line_pos);
   }
 }
 
 void
-OksData::read(const oks::ReadFileParams& read_params, const OksAttribute * a, /*atype,*/ int32_t num)
+OksData::read(const ReadFileParams& read_params, const OksAttribute * a, /*atype,*/ int32_t num)
 {
   if(type != list_type) {
     Set(new List());
@@ -763,7 +768,7 @@ OksData::read(const oks::ReadFileParams& read_params, const OksAttribute * a, /*
 
 
 void
-OksData::read(const oks::ReadFileParams& read_params, const OksAttribute *a)
+OksData::read(const ReadFileParams& read_params, const OksAttribute *a)
 {
   const char * read_value="";  // is used for report in case of exception
   char * __sanity;
@@ -867,7 +872,7 @@ OksData::read(const oks::ReadFileParams& read_params, const OksAttribute *a)
         read_value = "quoted date string";
         {
           size_t len = fxs.get_quoted();
-	  Set(oks::str2date(fxs.get_xml_token().m_buf, len));
+	  Set(str2date(fxs.get_xml_token().m_buf, len));
         }
         break;
 
@@ -875,7 +880,7 @@ OksData::read(const oks::ReadFileParams& read_params, const OksAttribute *a)
         read_value = "quoted time string";
         {
           size_t len = fxs.get_quoted();
-	  Set(oks::str2time(fxs.get_xml_token().m_buf, len));
+	  Set(str2time(fxs.get_xml_token().m_buf, len));
         }
         break;
 
@@ -914,11 +919,11 @@ OksData::read(const oks::ReadFileParams& read_params, const OksAttribute *a)
         }
     }
   }
-  catch (oks::exception & e) {
-    throw oks::FailedRead(read_value, e);
+  catch (exception & e) {
+    throw FailedRead(read_value, e);
   }
   catch (std::exception & e) {
-    throw oks::FailedRead(read_value, e.what());
+    throw FailedRead(read_value, e.what());
   }
 }
 
@@ -1012,12 +1017,12 @@ OksData::read(const OksAttribute *a, const OksXmlValue& value)
 
       case date_type:
         read_value = "quoted date string";
-        Set(oks::str2date(value.buf(), value.len()));
+        Set(str2date(value.buf(), value.len()));
         break;
 
       case time_type:
         read_value = "quoted time string";
-        Set(oks::str2time(value.buf(), value.len()));
+        Set(str2time(value.buf(), value.len()));
         break;
 
       case enum_type:
@@ -1049,16 +1054,16 @@ OksData::read(const OksAttribute *a, const OksXmlValue& value)
         }
     }
   }
-  catch (oks::exception & e) {
-    throw oks::FailedRead(read_value, e);
+  catch (exception & e) {
+    throw FailedRead(read_value, e);
   }
   catch (std::exception & e) {
-    throw oks::FailedRead(read_value, e.what());
+    throw FailedRead(read_value, e.what());
   }
 }
 
 void
-OksData::read(const OksAttribute *a, const oks::ReadFileParams& read_params)
+OksData::read(const OksAttribute *a, const ReadFileParams& read_params)
 {
   if (type != list_type)
     Set(new List());
@@ -1071,15 +1076,15 @@ OksData::read(const OksAttribute *a, const oks::ReadFileParams& read_params)
         const char * tag_start = read_params.s.get_tag_start();
 
         // check for closing tag
-        if (*tag_start == '/' && oks::cmp_str5n(tag_start+1, OksObject::attribute_xml_tag))
+        if (*tag_start == '/' && cmp_str5n(tag_start+1, OksObject::attribute_xml_tag))
           break;
 
-        if (oks::cmp_str4(tag_start, OksObject::data_xml_tag))
+        if (cmp_str4(tag_start, OksObject::data_xml_tag))
           {
               {
                 OksXmlAttribute attr(read_params.s);
 
-                if (oks::cmp_str3(attr.name(), OksObject::value_xml_attribute))
+                if (cmp_str3(attr.name(), OksObject::value_xml_attribute))
                   {
                     OksXmlValue value(read_params.s.get_value(attr.p_value_len));
                     data.LIST->push_back(new OksData(a, value));
@@ -1094,7 +1099,7 @@ OksData::read(const OksAttribute *a, const oks::ReadFileParams& read_params)
               {
                 OksXmlAttribute attr(read_params.s);
 
-                if (oks::cmp_str1(attr.name(), "/") == false)
+                if (cmp_str1(attr.name(), "/") == false)
                   {
                     std::ostringstream s;
                     s << "Unexpected tag \"" << attr.name() << "\" instead of close tag (line " << read_params.s.get_line_no() << ", char " << read_params.s.get_line_pos() << ')';
@@ -1109,18 +1114,18 @@ OksData::read(const OksAttribute *a, const oks::ReadFileParams& read_params)
             throw std::runtime_error(s.str().c_str());
           }
       }
-    catch (oks::exception & e)
+    catch (exception & e)
       {
-        throw oks::FailedRead("multi-value", e);
+        throw FailedRead("multi-value", e);
       }
     catch (std::exception & e)
       {
-        throw oks::FailedRead("multi-value", e.what());
+        throw FailedRead("multi-value", e.what());
       }
 }
 
 void
-OksData::read(const oks::ReadFileParams& read_params, const OksRelationship * r, int32_t num)
+OksData::read(const ReadFileParams& read_params, const OksRelationship * r, int32_t num)
 {
   if( __builtin_expect((type != list_type), 0) ) {
     Set(new List());
@@ -1141,7 +1146,7 @@ OksData::read(const oks::ReadFileParams& read_params, const OksRelationship * r,
 }
 
 void
-OksData::read(const oks::ReadFileParams& read_params, const OksRelationship * r)
+OksData::read(const ReadFileParams& read_params, const OksRelationship * r)
 {
   const OksClass * rel_class(r->p_class_type);   // class of relationship
   OksString * class_id(0);                       // class-name of read object
@@ -1190,7 +1195,7 @@ OksData::read(const oks::ReadFileParams& read_params, const OksRelationship * r)
               );
             }
             else {
-              Oks::warning_msg("OksData::read(const oks::ReadFileParams&, const OksRelationship*")
+              Oks::warning_msg("OksData::read(const ReadFileParams&, const OksRelationship*")
                 << "  Can't find alias for class \'" << class_name_str << "\'\n"
                    "  Possibly data file has been saved in old format\n";
 
@@ -1223,7 +1228,7 @@ OksData::read(const oks::ReadFileParams& read_params, const OksRelationship * r)
     }
 
 
-    std::string& obj_id((const_cast<oks::ReadFileParams&>(read_params)).tmp);  // use temporal string for fast assignment
+    std::string& obj_id((const_cast<ReadFileParams&>(read_params)).tmp);  // use temporal string for fast assignment
     obj_id.assign(fxs.get_xml_token().m_buf, len);
     OksObject * obj = c->get_object(obj_id);
 
@@ -1239,13 +1244,13 @@ OksData::read(const oks::ReadFileParams& read_params, const OksRelationship * r)
     Set(obj);
     obj->add_RCR(read_params.owner, r);
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     if(class_id) delete class_id;
-    throw oks::FailedRead("relationship value", ex);
+    throw FailedRead("relationship value", ex);
   }
   catch (std::exception & ex) {
     if(class_id) delete class_id;
-    throw oks::FailedRead("relationship value", ex.what());
+    throw FailedRead("relationship value", ex.what());
   }
 
 final:
@@ -1289,17 +1294,17 @@ OksData::read(const OksRelationship * r, const OksXmlRelValue& value)
       Set(obj);
       obj->add_RCR(value.m_file_params.owner, r);
     }
-  catch (oks::exception& ex)
+  catch (exception& ex)
     {
       if (value.m_class_id)
         delete value.m_class_id;
-      throw oks::FailedRead("relationship value", ex);
+      throw FailedRead("relationship value", ex);
     }
   catch (std::exception & ex)
     {
       if (value.m_class_id)
         delete value.m_class_id;
-      throw oks::FailedRead("relationship value", ex.what());
+      throw FailedRead("relationship value", ex.what());
     }
 
   final:
@@ -1308,7 +1313,7 @@ OksData::read(const OksRelationship * r, const OksXmlRelValue& value)
 }
 
 void
-OksData::read(const OksRelationship *r, const oks::ReadFileParams& read_params)
+OksData::read(const OksRelationship *r, const ReadFileParams& read_params)
 {
   if (type != list_type)
     Set(new List());
@@ -1321,10 +1326,10 @@ OksData::read(const OksRelationship *r, const oks::ReadFileParams& read_params)
         const char * tag_start = read_params.s.get_tag_start();
 
         // check for closing tag
-        if (*tag_start == '/' && oks::cmp_str4n(tag_start+1, OksObject::relationship_xml_tag))
+        if (*tag_start == '/' && cmp_str4n(tag_start+1, OksObject::relationship_xml_tag))
           break;
 
-        if (oks::cmp_str3(tag_start, OksObject::ref_xml_tag))
+        if (cmp_str3(tag_start, OksObject::ref_xml_tag))
           {
             OksXmlRelValue value(read_params);
 
@@ -1334,17 +1339,17 @@ OksData::read(const OksRelationship *r, const oks::ReadFileParams& read_params)
 
                   // check for close of tag
 
-                if(oks::cmp_str1(attr.name(), ">") || oks::cmp_str1(attr.name(), "/")) { break; }
+                if(cmp_str1(attr.name(), ">") || cmp_str1(attr.name(), "/")) { break; }
 
                   // check for known oks-relationship' attributes
 
-                else if(oks::cmp_str5(attr.name(), OksObject::class_xml_attribute)) {
+                else if(cmp_str5(attr.name(), OksObject::class_xml_attribute)) {
                     value.m_class = read_params.owner->uid.class_id->get_kernel()->find_class(attr.value());
                     if( __builtin_expect((value.m_class == nullptr && attr.value_len() > 0), 0) ) {
                       value.m_class_id = new OksString(attr.value(), attr.value_len());
                     }
                 }
-                else if(oks::cmp_str2(attr.name(), OksObject::id_xml_attribute)) {
+                else if(cmp_str2(attr.name(), OksObject::id_xml_attribute)) {
                   value.m_value = read_params.s.get_value(attr.p_value_len);
                 }
                 else
@@ -1362,11 +1367,11 @@ OksData::read(const OksRelationship *r, const oks::ReadFileParams& read_params)
                   data.LIST->push_back(d);
                 }
             }
-            catch(oks::exception & e) {
-              throw oks::FailedRead("multi-value relationship", e);
+            catch(exception & e) {
+              throw FailedRead("multi-value relationship", e);
             }
             catch (std::exception & e) {
-              throw oks::FailedRead("multi-value relationship", e.what());
+              throw FailedRead("multi-value relationship", e.what());
             }
           }
         else
@@ -1376,13 +1381,13 @@ OksData::read(const OksRelationship *r, const oks::ReadFileParams& read_params)
             throw std::runtime_error(s.str().c_str());
           }
       }
-    catch (oks::exception & e)
+    catch (exception & e)
       {
-        throw oks::FailedRead("multi-value", e);
+        throw FailedRead("multi-value", e);
       }
     catch (std::exception & e)
       {
-        throw oks::FailedRead("multi-value", e.what());
+        throw FailedRead("multi-value", e.what());
       }
 }
 
@@ -1958,17 +1963,6 @@ OksData::sort(bool ascending)
     data.LIST->sort( []( const OksData* a, const OksData* b ) { return *a > *b; } );
 }
 
-ERS_DECLARE_ISSUE(
-  oks,
-  DeprecatedFormat,
-  "the file " << file << " contains OKS time data stored in deprecated format \'" << data << "\'. Please refresh it using an oks application. Support for such format will be removed in a future release.",
-  ((const char *)file)
-  ((const char *)data)
-)
-
-namespace oks
-{
-
   boost::posix_time::ptime str2time(const char * value, size_t len, const char * file_name)
   {
     if(len == 15 && value[8] == 'T') {
@@ -1982,7 +1976,7 @@ namespace oks
     }
     else {
       try {
-        oks::Time t(value);
+        Time t(value);
         std::ostringstream text;
         text << std::setfill('0')
           << std::setw(4) << t.year()
@@ -1995,13 +1989,13 @@ namespace oks
         TLOG_DEBUG( 1 ) << "parse OKS time: " << t << " => " << text.str() ;
 
         if(file_name)
-          ers::warning(oks::DeprecatedFormat(ERS_HERE, file_name, value));
+          ers::warning(DeprecatedFormat(ERS_HERE, file_name, value));
         else
           Oks::warning_msg("oks str2time") << "The file is using deprecated OKS time format \"" << value << "\"\nPlease refresh it using an oks application\nSupport for such format will be removed in a future release.\n";
 
         return boost::posix_time::from_iso_string(text.str());
       }
-      catch (oks::exception& ex) {
+      catch (exception& ex) {
         //throw TimeCvtFailed(value, ex);
         throw AttributeReadError(value, "time", ex);
       }
@@ -2024,7 +2018,7 @@ namespace oks
     }
     else {
       try {
-        oks::Date t(value);
+        Date t(value);
         std::ostringstream text;
         text << std::setfill('0')
           << std::setw(4) << t.year()
@@ -2036,7 +2030,7 @@ namespace oks
 
         return boost::gregorian::from_undelimited_string(text.str());
       }
-      catch (oks::exception& ex) {
+      catch (exception& ex) {
         throw AttributeReadError(value, "date", ex);
       }
       catch (std::exception& ex) {
@@ -2045,4 +2039,5 @@ namespace oks
     }
   }
 
-}
+} // namespace oks
+} // namespace dunedaq

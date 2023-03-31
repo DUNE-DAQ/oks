@@ -22,6 +22,7 @@
 #include <filesystem>
 #include <mutex>
 
+using namespace dunedaq::oks;
 
 enum __OksValidateRepositoryExitStatus__ {
   __Success__ = 0,
@@ -95,7 +96,7 @@ public:
         static std::mutex s_log_mutex;
         std::lock_guard scoped_lock(s_log_mutex);
 
-        oks::log_timestamp() << "validated file \"" << m_file_name << "\" in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms\n";
+        log_timestamp() << "validated file \"" << m_file_name << "\" in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms\n";
       }
     catch (std::exception& ex)
       {
@@ -304,7 +305,7 @@ main(int argc, char **argv)
           kernel.get_includes(p.path().native(), file_explicit_includes[p.path().native().substr(2)], true);
 
       if (verbose)
-        oks::log_timestamp(oks::Debug) << "scan " << file_explicit_includes.size() << " repository files in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms\n";
+        log_timestamp(Debug) << "scan " << file_explicit_includes.size() << " repository files in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms\n";
 
 
       auto start_usage2 = std::chrono::steady_clock::now();
@@ -329,7 +330,7 @@ main(int argc, char **argv)
         }
 
       if (verbose)
-        oks::log_timestamp(oks::Debug) << "check existence of includes in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage2).count() / 1000. << " ms\n";
+        log_timestamp(Debug) << "check existence of includes in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage2).count() / 1000. << " ms\n";
 
 
       auto start_usage3 = std::chrono::steady_clock::now();
@@ -346,14 +347,14 @@ main(int argc, char **argv)
       auto stop_usage3 = std::chrono::steady_clock::now();
 
       if (verbose)
-        oks::log_timestamp(oks::Debug) << "calculated inclusion graph in " << std::chrono::duration_cast<std::chrono::microseconds>(stop_usage3-start_usage3).count() / 1000. << " ms\n";
+        log_timestamp(Debug) << "calculated inclusion graph in " << std::chrono::duration_cast<std::chrono::microseconds>(stop_usage3-start_usage3).count() / 1000. << " ms\n";
 
-      oks::log_timestamp() << "process " << file_explicit_includes.size() << " repository files and their includes in " << std::chrono::duration_cast<std::chrono::microseconds>(stop_usage3-start_usage).count() / 1000. << " ms" << std::endl;
+      log_timestamp() << "process " << file_explicit_includes.size() << " repository files and their includes in " << std::chrono::duration_cast<std::chrono::microseconds>(stop_usage3-start_usage).count() / 1000. << " ms" << std::endl;
 
 
       if (s_circular_dependency_message.m_count)
         {
-          oks::log_timestamp((circular_dependency_between_includes_is_error == true ? oks::Error : oks::Warning)) << "Detected " << s_circular_dependency_message.m_count << " circular dependencies between includes of the repository files:" << s_circular_dependency_message.m_text.str() << std::endl;
+          log_timestamp((circular_dependency_between_includes_is_error == true ? Error : Warning)) << "Detected " << s_circular_dependency_message.m_count << " circular dependencies between includes of the repository files:" << s_circular_dependency_message.m_text.str() << std::endl;
 
           if (circular_dependency_between_includes_is_error == true)
             return __IncludesCircularDependencyError__;
@@ -434,23 +435,23 @@ main(int argc, char **argv)
 
       if (!s_load_error.empty())
         {
-          oks::log_timestamp(oks::Error) << s_load_error << std::endl;
+          log_timestamp(Error) << s_load_error << std::endl;
           return __ConsistencyError__;
         }
     }
-  catch (oks::exception & ex)
+  catch (exception & ex)
     {
-      oks::log_timestamp(oks::Error) << "Caught oks exception:\n" << ex << std::endl;
+      log_timestamp(Error) << "Caught oks exception:\n" << ex << std::endl;
       return __ExceptionCaught__;
     }
   catch (std::exception & e)
     {
-      oks::log_timestamp(oks::Error) << "Caught standard C++ exception:\n" << e.what() << std::endl;
+      log_timestamp(Error) << "Caught standard C++ exception:\n" << e.what() << std::endl;
       return __ExceptionCaught__;
     }
   catch (...)
     {
-      oks::log_timestamp(oks::Error) << "Caught unknown exception" << std::endl;
+      log_timestamp(Error) << "Caught unknown exception" << std::endl;
       return __ExceptionCaught__;
     }
 

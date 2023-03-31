@@ -23,6 +23,9 @@
 #include "ers/ers.hpp"
 #include "logging/Logging.hpp"
 
+namespace dunedaq {
+namespace oks {
+
   // names of xml tags and attributes (differed for compact and extended files)
 
 const char OksObject::obj_xml_tag []          = "obj";
@@ -45,8 +48,6 @@ const char OksObject::value_xml_attribute[]   = "val";
 const char OksObject::data_xml_tag[]          = "data";
 const char OksObject::ref_xml_tag[]           = "ref";
 
-
-namespace oks {
 
   std::string
   FailedReadObject::fill(const OksObject * o, const std::string& what, const std::string& reason)
@@ -132,7 +133,6 @@ namespace oks {
     return s.str();
   }
 
-}
 
 
 void
@@ -3197,3 +3197,6 @@ OksObject::check_file_lock(const OksAttribute * a, const OksRelationship * r)
     throw oks::ObjectSetError(this, (a == nullptr), (a ? a->get_name() : r->get_name()), ex);
   }
 }
+
+} // namespace oks
+} // namespace dunedaq

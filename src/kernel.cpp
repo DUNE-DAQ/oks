@@ -46,6 +46,9 @@
 
 #include "oks_utils.hpp"
 
+namespace dunedaq {
+namespace oks {
+
 std::mutex OksKernel::p_parallel_out_mutex;
 
 static std::mutex s_get_cwd_mutex;
@@ -60,8 +63,6 @@ std::string OksKernel::p_repository_mapping_dir;
 int OksKernel::p_threads_pool_size = 0;
 
 
-namespace oks
-{
   class GitFoldersHolder
   {
   public:
@@ -109,18 +110,16 @@ namespace oks
   };
 
   static GitFoldersHolder s_git_folders;
-}
 
 
 const std::string
-oks::strerror(int error)
+strerror(int error)
 {
   char buffer[1024];
   buffer[0] = 0;
   return std::string(strerror_r(error, buffer, 1024));
 }
 
-namespace oks {
 
   ERS_DECLARE_ISSUE(
     kernel,
@@ -199,7 +198,7 @@ namespace oks {
   std::string
   CanNotCreateRepositoryDir::fill(const char * prefix, const std::string& name) noexcept
   {
-    return std::string(prefix) + "(): failed to create user repository dir, mkdtemp(\'" + name + "\') failed: " + oks::strerror(errno);
+    return std::string(prefix) + "(): failed to create user repository dir, mkdtemp(\'" + name + "\') failed: " + strerror(errno);
   }
 
   std::string
@@ -241,7 +240,7 @@ namespace oks {
   CannotResolvePath::fill(const std::string& path, int error_code) noexcept
   {
     std::ostringstream text;
-    text << "realpath(\'" << path << "\') has failed with code " << error_code << ": \'" << oks::strerror(error_code) << '\'';
+    text << "realpath(\'" << path << "\') has failed with code " << error_code << ": \'" << strerror(error_code) << '\'';
     return text.str();
   }
 
@@ -294,7 +293,6 @@ namespace oks {
 
     return s_dir;
   }
-}
 
 
 const char *
@@ -409,7 +407,7 @@ OksKernel::set_user_repository_root(const std::string& path, const std::string& 
   try {
     Oks::real_path(s, false);
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     TLOG_DEBUG( 1) << "Failed to set user-repository-root = \'" << s << "\':\n\tcaused by: " << ex.what() ;
   }
 
@@ -605,11 +603,11 @@ Oks::real_path(std::string& path, bool ignore_errors)
   }
   else {
     if(ignore_errors) {
-      TLOG_DEBUG( 3) << "realpath(\'" << path << "\') has failed with code " << errno << ": \'" << oks::strerror(errno) << '\'' ;
+      TLOG_DEBUG( 3) << "realpath(\'" << path << "\') has failed with code " << errno << ": \'" << strerror(errno) << '\'' ;
       return false;
     }
     else {
-      throw oks::CannotResolvePath(path, errno);
+      throw CannotResolvePath(path, errno);
     }
   }
 }
@@ -700,7 +698,7 @@ OksKernel::get_cwd()
     long size = pathconf(".", _PC_PATH_MAX);
     if (errno)
       {
-        Oks::error_msg("OksKernel::OksKernel") << "pathconf(\".\", _PC_PATH_MAX) has failed with code " << errno << ": \'" << oks::strerror(errno) << '\'' << std::endl;
+        Oks::error_msg("OksKernel::OksKernel") << "pathconf(\".\", _PC_PATH_MAX) has failed with code " << errno << ": \'" << strerror(errno) << '\'' << std::endl;
       }
     else
       {
@@ -711,7 +709,7 @@ OksKernel::get_cwd()
         s_cwd = new char[size];
         if (!getcwd(s_cwd, (size_t) size))
           {
-            Oks::error_msg("OksKernel::OksKernel") << "getcwd() has failed with code " << errno << ": \'" << oks::strerror(errno) << '\'' << std::endl;
+            Oks::error_msg("OksKernel::OksKernel") << "getcwd() has failed with code " << errno << ": \'" << strerror(errno) << '\'' << std::endl;
             delete[] s_cwd;
             s_cwd = 0;
           }
@@ -839,7 +837,7 @@ OksKernel::OksKernel(bool sm, bool vm, bool tm, bool allow_repository, const cha
             p_threads_pool_size = sysconf(_SC_NPROCESSORS_ONLN);
             if (p_threads_pool_size == -1 && !errno)
               {
-                Oks::error_msg("OksKernel::OksKernel()") << " sysconf(_SC_NPROCESSORS_ONLN) has failed with code " << errno << ": \'" << oks::strerror(errno) << '\'' << std::endl;
+                Oks::error_msg("OksKernel::OksKernel()") << " sysconf(_SC_NPROCESSORS_ONLN) has failed with code " << errno << ": \'" << strerror(errno) << '\'' << std::endl;
                 p_threads_pool_size = 0;
               }
           }
@@ -884,7 +882,7 @@ OksKernel::OksKernel(bool sm, bool vm, bool tm, bool allow_repository, const cha
 
               set_user_repository_root(tmp_dirname);
               p_user_repository_root_created = true;
-              oks::s_git_folders.insert(p_user_repository_root);
+              s_git_folders.insert(p_user_repository_root);
 
               if (branch_name.empty())
                   if (const char *var = getenv("TDAQ_DB_BRANCH"))
@@ -892,7 +890,7 @@ OksKernel::OksKernel(bool sm, bool vm, bool tm, bool allow_repository, const cha
 
               k_checkout_repository(param, val, branch_name);
             }
-          catch(oks::exception& ex)
+          catch(exception& ex)
             {
               Oks::error_msg("OksKernel::OksKernel") << "cannot check out user repository: " << ex.what() << std::endl;
             }
@@ -906,7 +904,7 @@ OksKernel::OksKernel(bool sm, bool vm, bool tm, bool allow_repository, const cha
                   std::lock_guard lock(p_parallel_out_mutex);
                   std::cout << "attach to repository \"" << get_user_repository_root() << "\" version " << read_repository_version() << std::endl;
                 }
-              catch(oks::exception& ex)
+              catch(exception& ex)
                 {
                   Oks::error_msg("OksKernel::OksKernel") << "cannot read user repository version: " << ex.what() << std::endl;
                 }
@@ -958,10 +956,10 @@ OksKernel::OksKernel(const OksKernel& src, bool copy_repository) :
           p_user_repository_root = OksKernel::create_user_repository_dir();
           p_user_repository_root_created = true;
           Oks::real_path(p_user_repository_root, false);
-          oks::s_git_folders.insert(p_user_repository_root);
+          s_git_folders.insert(p_user_repository_root);
           k_copy_repository(src.p_user_repository_root, p_user_repository_root);
         }
-      catch(oks::exception& ex)
+      catch(exception& ex)
         {
           Oks::error_msg("OksKernel::OksKernel") << "cannot copy user repository: " << ex.what() << std::endl;
           remove_user_repository_dir();
@@ -1312,7 +1310,7 @@ OksKernel::OksKernel(const OksKernel& src, bool copy_repository) :
                   }
                 else
                   {
-                    ers::error(oks::kernel::InternalError(ERS_HERE, "unexpected data type in relationship list"));
+                    ers::error(kernel::InternalError(ERS_HERE, "unexpected data type in relationship list"));
                   }
 
                 dst_data->data.LIST->push_back(d);
@@ -1339,7 +1337,7 @@ OksKernel::OksKernel(const OksKernel& src, bool copy_repository) :
               break;
 
             default:
-              ers::error(oks::kernel::InternalError(ERS_HERE, "unexpected data type in relationship"));
+              ers::error(kernel::InternalError(ERS_HERE, "unexpected data type in relationship"));
               break;
           }
 
@@ -1417,7 +1415,7 @@ OksKernel::insert_repository_dir(const std::string& dir, bool push_back)
       return s;
     }
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     TLOG_DEBUG( 1) << "Cannot insert repository dir \'" << dir << "\':\n\tcaused by: " << ex ;
   }
 
@@ -1812,7 +1810,7 @@ OksKernel::k_load_file(const std::string& short_file_name, bool bind, const OksF
     full_file_name = get_file_path(short_file_name, parent_h);
   }
   catch (std::exception & e) {
-    throw oks::CanNotOpenFile("k_load_file", short_file_name, e.what());
+    throw CanNotOpenFile("k_load_file", short_file_name, e.what());
   }
 
   try {
@@ -1840,17 +1838,17 @@ OksKernel::k_load_file(const std::string& short_file_name, bool bind, const OksF
 
       OksFile * file_h = new OksFile(xmls, short_file_name, full_file_name, this);
 
-      if(file_h->p_oks_format.size() == 6 && oks::cmp_str6n(file_h->p_oks_format.c_str(), "schema")) {
+      if(file_h->p_oks_format.size() == 6 && cmp_str6n(file_h->p_oks_format.c_str(), "schema")) {
         k_load_schema(file_h, xmls, parent_h);
       }
       else {
         char format;
 
-        if(file_h->p_oks_format.size() == 4 && oks::cmp_str4n(file_h->p_oks_format.c_str(), "data"))
+        if(file_h->p_oks_format.size() == 4 && cmp_str4n(file_h->p_oks_format.c_str(), "data"))
           format = 'n';
-        else if(file_h->p_oks_format.size() == 8 && oks::cmp_str8n(file_h->p_oks_format.c_str(), "extended"))
+        else if(file_h->p_oks_format.size() == 8 && cmp_str8n(file_h->p_oks_format.c_str(), "extended"))
           format = 'X';
-        else if(file_h->p_oks_format.size() == 7 && oks::cmp_str7n(file_h->p_oks_format.c_str(), "compact"))
+        else if(file_h->p_oks_format.size() == 7 && cmp_str7n(file_h->p_oks_format.c_str(), "compact"))
           format = 'c';
         else {
           delete file_h;
@@ -1868,14 +1866,14 @@ OksKernel::k_load_file(const std::string& short_file_name, bool bind, const OksF
       throw std::runtime_error("k_load_file(): cannot open file");
     }
   }
-  catch (oks::exception & e) {
-    throw oks::FailedLoadFile("file", full_file_name, e);
+  catch (exception & e) {
+    throw FailedLoadFile("file", full_file_name, e);
   }
   catch (std::exception & e) {
-    throw oks::FailedLoadFile("file", full_file_name, e.what());
+    throw FailedLoadFile("file", full_file_name, e.what());
   }
   catch (...) {
-    throw oks::FailedLoadFile("file", full_file_name, "caught unknown exception");
+    throw FailedLoadFile("file", full_file_name, "caught unknown exception");
   }
 }
 
@@ -1888,28 +1886,28 @@ OksKernel::k_load_includes(const OksFile& f, OksPipeline * pipeline)
       //if(f.get_repository() != OksFile::NoneRepository) {
       if(!get_user_repository_root().empty()) {
         if((*i)[0] == '/') {
-          throw oks::FailedLoadFile("include", *i, "inclusion of files with absolute pathname (like \"/foo/bar\") is not allowed by repository files; include files relative to repository root (like \"foo/bar\")");
+          throw FailedLoadFile("include", *i, "inclusion of files with absolute pathname (like \"/foo/bar\") is not allowed by repository files; include files relative to repository root (like \"foo/bar\")");
         }
         else if((*i)[0] == '.') {
-          throw oks::FailedLoadFile("include", *i, "inclusion of files with file-related relative pathnames (like \"../foo/bar\" or \"./bar\") is not supported by repository files; include files relative to repository root (like \"foo/bar\")");
+          throw FailedLoadFile("include", *i, "inclusion of files with file-related relative pathnames (like \"../foo/bar\" or \"./bar\") is not supported by repository files; include files relative to repository root (like \"foo/bar\")");
         }
         else if((*i).find('/') == std::string::npos) {
-          throw oks::FailedLoadFile("include", *i, "inclusion of files with file-related local pathnames (like \"bar\") is not supported by repository files; include files relative to repository root (like \"foo/bar\")");
+          throw FailedLoadFile("include", *i, "inclusion of files with file-related local pathnames (like \"bar\") is not supported by repository files; include files relative to repository root (like \"foo/bar\")");
         }
       }
 
       try {
         k_load_file(*i, false, &f, pipeline);
       }
-      catch (oks::exception & e) {
-        throw oks::FailedLoadFile("include", *i, e);
+      catch (exception & e) {
+        throw FailedLoadFile("include", *i, e);
       }
       catch (std::exception & e) {
-        throw oks::FailedLoadFile("include", *i, e.what());
+        throw FailedLoadFile("include", *i, e.what());
       }
     }
     else {
-      throw oks::FailedLoadFile("include", *i, "empty filename");
+      throw FailedLoadFile("include", *i, "empty filename");
     }
   }
 }
@@ -1935,11 +1933,11 @@ OksKernel::get_includes(const std::string& file_name, std::set< std::string >& i
 
     f->close();
   }
-  catch (oks::exception & e) {
-    throw (oks::FailedLoadFile("file", file_name, e));
+  catch (exception & e) {
+    throw (FailedLoadFile("file", file_name, e));
   }
   catch (std::exception & e) {
-    throw (oks::FailedLoadFile("file", file_name, e.what()));
+    throw (FailedLoadFile("file", file_name, e.what()));
   }
 }
 
@@ -2152,7 +2150,7 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
             full_file_name = get_file_path(*i, fp);
           }
           catch (std::exception & e) {
-            throw oks::CanNotOpenFile("k_preload_includes", *i, e.what());
+            throw CanNotOpenFile("k_preload_includes", *i, e.what());
           }
 
           OksFile::Map::const_iterator j = p_schema_files.find(&full_file_name);
@@ -2212,11 +2210,11 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
       }
     }
   }
-  catch (oks::exception & e) {
-    throw oks::FailedLoadFile("data file", fp->get_full_file_name(), e);
+  catch (exception & e) {
+    throw FailedLoadFile("data file", fp->get_full_file_name(), e);
   }
   catch (std::exception & e) {
-    throw oks::FailedLoadFile("data file", fp->get_full_file_name(), e.what());
+    throw FailedLoadFile("data file", fp->get_full_file_name(), e.what());
   }
   
   return found_include_changes;
@@ -2237,7 +2235,7 @@ OksKernel::create_user_repository_dir()
   if (const char * user_repo_base = getenv("TDAQ_DB_USER_REPOSITORY_ROOT"))
     user_repo = user_repo_base;
   else
-    user_repo = oks::get_temporary_dir();
+    user_repo = get_temporary_dir();
 
   user_repo.push_back('/');
   if (const char * user_repo_pattern = getenv("TDAQ_DB_USER_REPOSITORY_PATTERN"))
@@ -2253,7 +2251,7 @@ OksKernel::create_user_repository_dir()
       return tmp_dirname;
     }
 
-  throw oks::CanNotCreateRepositoryDir("make_user_repository_dir", user_repo);
+  throw CanNotCreateRepositoryDir("make_user_repository_dir", user_repo);
 }
 
 
@@ -2320,7 +2318,7 @@ OksKernel::k_load_schema(const std::string& short_file_name, const OksFile * par
     full_file_name = get_file_path(short_file_name, parent_h);
   }
   catch (std::exception & e) {
-    throw oks::CanNotOpenFile("k_load_schema", short_file_name, e.what());
+    throw CanNotOpenFile("k_load_schema", short_file_name, e.what());
   }
 
   try {
@@ -2359,17 +2357,17 @@ OksKernel::k_load_schema(const std::string& short_file_name, const OksFile * par
       return fp;
     }
   }
-  catch (oks::FailedLoadFile &) {
+  catch (FailedLoadFile &) {
     throw; //forward
   }
-  catch (oks::exception & e) {
-    throw oks::FailedLoadFile("schema file", full_file_name, e);
+  catch (exception & e) {
+    throw FailedLoadFile("schema file", full_file_name, e);
   }
   catch (std::exception & e) {
-    throw oks::FailedLoadFile("schema file", full_file_name, e.what());
+    throw FailedLoadFile("schema file", full_file_name, e.what());
   }
   catch (...) {
-    throw oks::FailedLoadFile("schema file", full_file_name, "caught unknown exception");
+    throw FailedLoadFile("schema file", full_file_name, "caught unknown exception");
   }
 }
 
@@ -2403,7 +2401,7 @@ OksKernel::k_load_schema(OksFile * fp, std::shared_ptr<OksXmlInputStream> xmls, 
       try {
 	c = new OksClass(*xmls, this);
       }
-      catch(oks::EndOfXmlStream &) {
+      catch(EndOfXmlStream &) {
         delete c;
         break;
       }
@@ -2422,7 +2420,7 @@ OksKernel::k_load_schema(OksFile * fp, std::shared_ptr<OksXmlInputStream> xmls, 
         if(p_allow_duplicated_classes && !are_different) {
           static bool ers_report = (getenv("OKS_KERNEL_ERS_REPORT_DUPLICATED_CLASSES") != nullptr);
           if(ers_report) {
-            ers::warning(oks::kernel::ClassAlreadyDefined(ERS_HERE,c->get_name(),fp->get_full_file_name(),c->p_file->get_full_file_name()));
+            ers::warning(kernel::ClassAlreadyDefined(ERS_HERE,c->get_name(),fp->get_full_file_name(),c->p_file->get_full_file_name()));
           }
           else {
             const char _fname[] = "k_load_schema";
@@ -2473,14 +2471,14 @@ OksKernel::k_load_schema(OksFile * fp, std::shared_ptr<OksXmlInputStream> xmls, 
 
     fp->update_status_of_file();
   }
-  catch (oks::exception & e) {
-    throw oks::FailedLoadFile("schema file", fp->get_full_file_name(), e);
+  catch (exception & e) {
+    throw FailedLoadFile("schema file", fp->get_full_file_name(), e);
   }
   catch (std::exception & e) {
-    throw oks::FailedLoadFile("schema file", fp->get_full_file_name(), e.what());
+    throw FailedLoadFile("schema file", fp->get_full_file_name(), e.what());
   }
   catch (...) {
-    throw oks::FailedLoadFile("schema file", fp->get_full_file_name(), "caught unknown exception");
+    throw FailedLoadFile("schema file", fp->get_full_file_name(), "caught unknown exception");
   }
 }
 
@@ -2493,7 +2491,7 @@ OksKernel::new_schema(const std::string& s)
   OSK_VERBOSE_REPORT("ENTER " << fname)
 
   if(!s.length()) {
-    throw oks::CanNotOpenFile("new_schema", s, "file name is empty");
+    throw CanNotOpenFile("new_schema", s, "file name is empty");
   }
 
   std::string file_name(s);
@@ -2524,10 +2522,10 @@ OksKernel::new_schema(const std::string& s)
 
   }
   catch (std::exception & e) {
-    throw oks::CanNotCreateFile("new_schema", "schema file", file_name, e.what());
+    throw CanNotCreateFile("new_schema", "schema file", file_name, e.what());
   }
   catch (...) {
-    throw oks::CanNotCreateFile("new_schema", "schema file", file_name, "caught unknown exception");
+    throw CanNotCreateFile("new_schema", "schema file", file_name, "caught unknown exception");
   }
 
   OSK_VERBOSE_REPORT("LEAVE " << fname)
@@ -2583,9 +2581,9 @@ OksKernel::backup_schema(OksFile * pf, const char * suffix)
   try {
     k_save_schema(&f, true, pf);
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     p_silence = silence;
-    throw oks::CanNotBackupFile(pf->p_full_name, ex);
+    throw CanNotBackupFile(pf->p_full_name, ex);
   }
 
   p_silence = silence;
@@ -2686,7 +2684,7 @@ OksKernel::k_save_schema(OksFile * pf, bool force, OksFile * fh, const OksClass:
 
       if(found_errors)
         {
-          oks::kernel::BindError ex(ERS_HERE, errors.str());
+          kernel::BindError ex(ERS_HERE, errors.str());
 
           if(force == false)
             {
@@ -2720,7 +2718,7 @@ OksKernel::k_save_schema(OksFile * pf, bool force, OksFile * fh, const OksClass:
       try {
         pf->unlock();
       }
-      catch(oks::exception& ex) {
+      catch(exception& ex) {
         throw std::runtime_error(ex.what());
       }
     }
@@ -2728,15 +2726,15 @@ OksKernel::k_save_schema(OksFile * pf, bool force, OksFile * fh, const OksClass:
     pf->update_status_of_file();
 
   }
-  catch (oks::exception & ex) {
+  catch (exception & ex) {
     if(pf != p_active_schema) { try { pf->unlock();} catch(...) {} }
     if(!tmp_file_name.empty()) { unlink(tmp_file_name.c_str()); }
-    throw oks::CanNotWriteToFile("k_save_schema", "schema file", pf->p_full_name, ex);
+    throw CanNotWriteToFile("k_save_schema", "schema file", pf->p_full_name, ex);
   }
   catch (std::exception & ex) {
     if(pf != p_active_schema) { try { pf->unlock();} catch(...) {} }
     if(!tmp_file_name.empty()) { unlink(tmp_file_name.c_str()); }
-    throw oks::CanNotWriteToFile("k_save_schema", "schema file", pf->p_full_name, ex.what());
+    throw CanNotWriteToFile("k_save_schema", "schema file", pf->p_full_name, ex.what());
   }
 
   OSK_VERBOSE_REPORT("LEAVE " << fname)
@@ -2784,11 +2782,11 @@ OksKernel::save_as_schema(const std::string& new_name, OksFile * pf)
     }
 
   }
-  catch (oks::exception & ex) {
-    throw oks::CanNotWriteToFile("k_save_as_schema", "schema file", pf->p_full_name, ex);
+  catch (exception & ex) {
+    throw CanNotWriteToFile("k_save_as_schema", "schema file", pf->p_full_name, ex);
   }
   catch (std::exception & ex) {
-    throw oks::CanNotWriteToFile("k_save_as_schema", "schema file", pf->p_full_name, ex.what());
+    throw CanNotWriteToFile("k_save_as_schema", "schema file", pf->p_full_name, ex.what());
   }
 
   OSK_VERBOSE_REPORT("LEAVE " << fname)
@@ -2847,7 +2845,7 @@ OksKernel::k_close_schema(OksFile * pf)
   try {
     pf->unlock();
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     Oks::error_msg("OksKernel::k_close_schema()") << ex.what() << std::endl;
   }
 
@@ -2926,8 +2924,8 @@ OksKernel::k_set_active_schema(OksFile * f)
     try {
       p_active_schema->unlock();
     }
-    catch(oks::exception& ex) {
-      throw oks::CanNotSetActiveFile("schema", f->get_full_file_name(), ex);
+    catch(exception& ex) {
+      throw CanNotSetActiveFile("schema", f->get_full_file_name(), ex);
     }
   }
 
@@ -2943,8 +2941,8 @@ OksKernel::k_set_active_schema(OksFile * f)
     f->lock();
     p_active_schema = f;
   }
-  catch(oks::exception& ex) {
-    throw oks::CanNotSetActiveFile("schema", f->get_full_file_name(), ex);
+  catch(exception& ex) {
+    throw CanNotSetActiveFile("schema", f->get_full_file_name(), ex);
   }
 
   TLOG_DEBUG(4) << "exit for file " << (void *)f;
@@ -3053,8 +3051,6 @@ OksKernel::get_modified_files(std::set<OksFile *>& mfs, std::set<OksFile *>& rfs
 /******************************************************************************/
 
 
-namespace oks {
-
   void LoadErrors::add_parents(std::string& text, const OksFile * file, std::set<const OksFile *>& parents)
   {
     if(file) {
@@ -3111,7 +3107,6 @@ namespace oks {
     return m_error_string;
   }
 
-}
 
 
 struct OksLoadObjectsJob : public OksJob
@@ -3130,7 +3125,7 @@ struct OksLoadObjectsJob : public OksJob
     {
       try {
         OksAliasTable alias_table;
-        oks::ReadFileParams read_params( m_fp, *m_xmls, ((m_format == 'X') ? 0 : &alias_table), m_kernel, m_format, 0 );
+        ReadFileParams read_params( m_fp, *m_xmls, ((m_format == 'X') ? 0 : &alias_table), m_kernel, m_format, 0 );
 
         m_fp->p_number_of_items = 0;
 
@@ -3139,7 +3134,7 @@ struct OksLoadObjectsJob : public OksJob
             m_fp->p_number_of_items++;
           }
         }
-        catch(oks::FailedCreateObject & ex) {
+        catch(FailedCreateObject & ex) {
 	  m_kernel->p_load_errors.add_error(*m_fp, ex);
 	  return;
         }
@@ -3180,7 +3175,7 @@ static bool _find_file(const OksFile::Map & files, const OksFile * f)
 }
 
 void
-oks::ReloadObjects::put(OksObject * o)
+ReloadObjects::put(OksObject * o)
 {
   oksdbinterfaces::map<OksObject *> *& c = data[o->uid.class_id];
   if(!c) c = new oksdbinterfaces::map<OksObject *>();
@@ -3188,7 +3183,7 @@ oks::ReloadObjects::put(OksObject * o)
 }
 
 OksObject *
-oks::ReloadObjects::pop(const OksClass* c, const std::string& id)
+ReloadObjects::pop(const OksClass* c, const std::string& id)
 {
   std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * >::iterator i = data.find(c);
   if(i != data.end()) {
@@ -3207,7 +3202,7 @@ oks::ReloadObjects::pop(const OksClass* c, const std::string& id)
   return 0;
 }
 
-oks::ReloadObjects::~ReloadObjects()
+ReloadObjects::~ReloadObjects()
 {
   for(std::map< const OksClass *, oksdbinterfaces::map<OksObject *> * >::iterator i = data.begin(); i != data.end(); ++i) {
     delete i->second;
@@ -3260,7 +3255,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
       // unlock any locked file
       // build container of objects which can be updated (and removed, if not reloaded)
 
-    oks::ReloadObjects reload_objects;
+    ReloadObjects reload_objects;
 
     for(i = files_h.begin(); i != files_h.end(); ++i) {
       if((*i)->is_locked()) {
@@ -3436,12 +3431,12 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
 
       {
         OksAliasTable alias_table;
-        oks::ReadFileParams read_params( *i, *xmls, ((format == 'X') ? 0 : &alias_table), this, format, &reload_objects );
+        ReadFileParams read_params( *i, *xmls, ((format == 'X') ? 0 : &alias_table), this, format, &reload_objects );
 
         try {
           while(OksObject::read(read_params)) { ; }
         }
-        catch(oks::FailedCreateObject & ex) {
+        catch(FailedCreateObject & ex) {
           set_test_duplicated_objects_via_inheritance_mode(duplicated_objs_mode);
           throw ex;
         }
@@ -3520,11 +3515,11 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
           }
       }
   }
-  catch (oks::exception & e) {
-    throw oks::FailedReloadFile(file_names, e);
+  catch (exception & e) {
+    throw FailedReloadFile(file_names, e);
   }
   catch (std::exception & e) {
-    throw oks::FailedReloadFile(file_names, e.what());
+    throw FailedReloadFile(file_names, e.what());
   }
 }
 
@@ -3586,7 +3581,7 @@ OksKernel::k_load_data(const std::string& short_file_name, bool bind, const OksF
     full_file_name = get_file_path(short_file_name, parent_h);
   }
   catch (std::exception & e) {
-    throw oks::CanNotOpenFile("k_load_data", short_file_name, e.what());
+    throw CanNotOpenFile("k_load_data", short_file_name, e.what());
   }
 
   try {
@@ -3624,11 +3619,11 @@ OksKernel::k_load_data(const std::string& short_file_name, bool bind, const OksF
 
       char format;
 
-      if(fp->p_oks_format.size() == 4 && oks::cmp_str4n(fp->p_oks_format.c_str(), "data"))
+      if(fp->p_oks_format.size() == 4 && cmp_str4n(fp->p_oks_format.c_str(), "data"))
         format = 'n';
-      else if(fp->p_oks_format.size() == 8 && oks::cmp_str8n(fp->p_oks_format.c_str(), "extended"))
+      else if(fp->p_oks_format.size() == 8 && cmp_str8n(fp->p_oks_format.c_str(), "extended"))
         format = 'X';
-      else if(fp->p_oks_format.size() == 7 && oks::cmp_str7n(fp->p_oks_format.c_str(), "compact"))
+      else if(fp->p_oks_format.size() == 7 && cmp_str7n(fp->p_oks_format.c_str(), "compact"))
         format = 'c';
       else {
         throw std::runtime_error("k_load_data(): file is not an oks data file");
@@ -3641,14 +3636,14 @@ OksKernel::k_load_data(const std::string& short_file_name, bool bind, const OksF
       return fp;
     }
   }
-  catch (oks::FailedLoadFile&) {
+  catch (FailedLoadFile&) {
     throw;
   }
-  catch (oks::exception & e) {
-    throw (oks::FailedLoadFile("data file", full_file_name, e));
+  catch (exception & e) {
+    throw (FailedLoadFile("data file", full_file_name, e));
   }
   catch (std::exception & e) {
-    throw (oks::FailedLoadFile("data file", full_file_name, e.what()));
+    throw (FailedLoadFile("data file", full_file_name, e.what()));
   }
 }
 
@@ -3701,7 +3696,7 @@ OksKernel::k_load_data(OksFile * fp, char format, std::shared_ptr<OksXmlInputStr
 
     if(!pipeline) {
       if(!p_load_errors.is_empty()) {
-        throw (oks::FailedLoadFile("data file", fp->get_full_file_name(), p_load_errors.get_text()));
+        throw (FailedLoadFile("data file", fp->get_full_file_name(), p_load_errors.get_text()));
       }
 
       if(bind) {
@@ -3709,14 +3704,14 @@ OksKernel::k_load_data(OksFile * fp, char format, std::shared_ptr<OksXmlInputStr
       }
     }
   }
-  catch (oks::FailedLoadFile&) {
+  catch (FailedLoadFile&) {
     throw;
   }
-  catch (oks::exception& e) {
-    throw (oks::FailedLoadFile("data file", fp->get_full_file_name(), e));
+  catch (exception& e) {
+    throw (FailedLoadFile("data file", fp->get_full_file_name(), e));
   }
   catch (std::exception& e) {
-    throw (oks::FailedLoadFile("data file", fp->get_full_file_name(), e.what()));
+    throw (FailedLoadFile("data file", fp->get_full_file_name(), e.what()));
   }
 }
 
@@ -3729,7 +3724,7 @@ OksKernel::new_data(const std::string& s, const std::string& logical_name, const
   OSK_VERBOSE_REPORT("ENTER " << fname)
 
   if(!s.length()) {
-    throw oks::CanNotOpenFile("new_data", s, "file name is empty");
+    throw CanNotOpenFile("new_data", s, "file name is empty");
   }
 
   std::string file_name(s);
@@ -3757,11 +3752,11 @@ OksKernel::new_data(const std::string& s, const std::string& logical_name, const
     add_data_file(p_active_data);
 
   }
-  catch (oks::exception & e) {
-    throw oks::CanNotCreateFile("new_data", "data file", file_name, e);
+  catch (exception & e) {
+    throw CanNotCreateFile("new_data", "data file", file_name, e);
   }
   catch (std::exception & e) {
-    throw oks::CanNotCreateFile("new_data", "data file", file_name, e.what());
+    throw CanNotCreateFile("new_data", "data file", file_name, e.what());
   }
 
   OSK_VERBOSE_REPORT("LEAVE " << fname)
@@ -3841,9 +3836,9 @@ OksKernel::backup_data(OksFile * pf, const char * suffix)
   try {
     k_save_data(&f, true, pf);
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     p_silence = silence;
-    throw oks::CanNotBackupFile(pf->p_full_name, ex);
+    throw CanNotBackupFile(pf->p_full_name, ex);
   }
 
   p_silence = silence;
@@ -4032,7 +4027,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
     struct stat buf;
     if(int code = stat(pf->p_full_name.c_str(), &buf)) {
       std::ostringstream text;
-      text << "cannot get information about file \'" << pf->p_full_name << "\': stat() failed with code " << code << ", reason = \'" << oks::strerror(errno) << '\'';
+      text << "cannot get information about file \'" << pf->p_full_name << "\': stat() failed with code " << code << ", reason = \'" << strerror(errno) << '\'';
       throw std::runtime_error(text.str().c_str());
     }
 
@@ -4041,7 +4036,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
 
     if(int code = rename(tmp_file_name.c_str(), pf->p_full_name.c_str())) {
       std::ostringstream text;
-      text << "cannot rename file \'" << tmp_file_name << "\' to \'" << pf->p_full_name << "\': rename() failed with code " << code << ", reason = \'" << oks::strerror(errno) << '\'';
+      text << "cannot rename file \'" << tmp_file_name << "\' to \'" << pf->p_full_name << "\': rename() failed with code " << code << ", reason = \'" << strerror(errno) << '\'';
       throw std::runtime_error(text.str().c_str());
     }
 
@@ -4052,7 +4047,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
       try {
         pf->unlock();
       }
-      catch(oks::exception& ex) {
+      catch(exception& ex) {
         throw std::runtime_error(ex.what());
       }
     }
@@ -4065,7 +4060,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
     struct stat buf2;
     if(int code = stat(pf->p_full_name.c_str(), &buf2)) {
       std::ostringstream text;
-      text << "cannot get information about file \'" << pf->p_full_name << "\': stat() failed with code " << code << ", reason = \'" << oks::strerror(errno) << '\'';
+      text << "cannot get information about file \'" << pf->p_full_name << "\': stat() failed with code " << code << ", reason = \'" << strerror(errno) << '\'';
       throw std::runtime_error(text.str().c_str());
     }
 
@@ -4075,7 +4070,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
     if(buf.st_mode != buf2.st_mode) {
       if(int code = chmod(pf->p_full_name.c_str(), buf.st_mode) != 0) {
         std::ostringstream text;
-        text << "cannot set protection mode for file \'" << pf->p_full_name << "\': chmod() failed with code " << code << ", reason = \'" << oks::strerror(errno) << '\'';
+        text << "cannot set protection mode for file \'" << pf->p_full_name << "\': chmod() failed with code " << code << ", reason = \'" << strerror(errno) << '\'';
         throw std::runtime_error(text.str().c_str());
       }
     }
@@ -4084,26 +4079,26 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
 
     if(buf.st_gid != buf2.st_gid) {
       if(int code = chown(pf->p_full_name.c_str(), (gid_t)(-1), buf.st_gid) != 0) {
-        ers::warning(oks::kernel::SetGroupIdFailed(ERS_HERE, buf.st_gid, pf->p_full_name.c_str(), code, oks::strerror(errno)));
+        ers::warning(kernel::SetGroupIdFailed(ERS_HERE, buf.st_gid, pf->p_full_name.c_str(), code, strerror(errno)));
       }
     }
 
   }
 
-  catch (oks::exception & e) {
+  catch (exception & e) {
     if(pf != p_active_data) { try { pf->unlock();} catch(...) {} }
     if(!tmp_file_name.empty()) { unlink(tmp_file_name.c_str()); }
-    throw oks::CanNotWriteToFile("k_save_data", "data file", pf->p_full_name, e);
+    throw CanNotWriteToFile("k_save_data", "data file", pf->p_full_name, e);
   }
   catch (std::exception & e) {
     if(pf != p_active_data) { try { pf->unlock();} catch(...) {} }
     if(!tmp_file_name.empty()) { unlink(tmp_file_name.c_str()); }
-    throw oks::CanNotWriteToFile("k_save_data", "data file", pf->p_full_name, e.what());
+    throw CanNotWriteToFile("k_save_data", "data file", pf->p_full_name, e.what());
   }
   catch (...) {
     if(pf != p_active_data) { try { pf->unlock();} catch(...) {} }
     if(!tmp_file_name.empty()) { unlink(tmp_file_name.c_str()); }
-    throw oks::CanNotWriteToFile("k_save_data", "data file", pf->p_full_name, "unknown");
+    throw CanNotWriteToFile("k_save_data", "data file", pf->p_full_name, "unknown");
   }
 
   OSK_VERBOSE_REPORT("LEAVE " << fname)
@@ -4152,11 +4147,11 @@ OksKernel::save_as_data(const std::string& new_name, OksFile * pf)
     }
 
   }
-  catch (oks::exception & ex) {
-    throw oks::CanNotWriteToFile("k_save_as_data", "data file", new_name, ex);
+  catch (exception & ex) {
+    throw CanNotWriteToFile("k_save_as_data", "data file", new_name, ex);
   }
   catch (std::exception & ex) {
-    throw oks::CanNotWriteToFile("k_save_as_data", "data file", new_name, ex.what());
+    throw CanNotWriteToFile("k_save_as_data", "data file", new_name, ex.what());
   }
 
   OSK_VERBOSE_REPORT("LEAVE " << fname)
@@ -4207,7 +4202,7 @@ OksKernel::k_close_data(OksFile * fp, bool unbind)
   try {
     fp->unlock();
   }
-  catch(oks::exception& ex) {
+  catch(exception& ex) {
     Oks::error_msg(fname) << ex.what() << std::endl;
   }
 
@@ -4305,8 +4300,8 @@ OksKernel::k_set_active_data(OksFile * fp)
     try {
       p_active_data->unlock();
     }
-    catch(oks::exception& ex) {
-      throw oks::CanNotSetActiveFile("data", fp->get_full_file_name(), ex);
+    catch(exception& ex) {
+      throw CanNotSetActiveFile("data", fp->get_full_file_name(), ex);
     }
   }
 
@@ -4322,8 +4317,8 @@ OksKernel::k_set_active_data(OksFile * fp)
     fp->lock();
     p_active_data = fp;
   }
-  catch(oks::exception& ex) {
-    throw oks::CanNotSetActiveFile("data", fp->get_full_file_name(), ex);
+  catch(exception& ex) {
+    throw CanNotSetActiveFile("data", fp->get_full_file_name(), ex);
   }
 
   TLOG_DEBUG(4) << "leave for file " << (void *)fp;
@@ -4383,7 +4378,7 @@ OksKernel::k_bind_objects()
       try {
         (*i)->bind_objects();
       }
-      catch(oks::ObjectBindError& ex) {
+      catch(ObjectBindError& ex) {
         if(ex.p_is_error) {
 	  throw;
 	}
@@ -4399,7 +4394,7 @@ OksKernel::k_bind_objects()
   }
 
   if(!p_silence && !p_bind_objects_status.empty()) {
-    ers::warning(oks::kernel::BindError(ERS_HERE, p_bind_objects_status));
+    ers::warning(kernel::BindError(ERS_HERE, p_bind_objects_status));
   }
 
   TLOG_DEBUG(4) << "exit with status:\n" << p_bind_objects_status;
@@ -4468,11 +4463,11 @@ OksKernel::k_add(OksClass *c)
   TLOG_DEBUG(4) << "enter for class \"" << c->get_name() << '\"';
 
   if(p_active_schema == 0) {
-    throw oks::CannotAddClass(*c, "no active schema");
+    throw CannotAddClass(*c, "no active schema");
   }
 
   if(p_classes.find(c->get_name().c_str()) != p_classes.end()) {
-    throw oks::CannotAddClass(*c, "class already exists");
+    throw CannotAddClass(*c, "class already exists");
   }
 
   c->p_kernel = this;
@@ -4484,8 +4479,8 @@ OksKernel::k_add(OksClass *c)
   try {
     registrate_all_classes(false);
   }
-  catch(oks::exception& ex) {
-    throw oks::CannotAddClass(*c, ex);
+  catch(exception& ex) {
+    throw CannotAddClass(*c, ex);
   }
 
   if(OksClass::create_notify_fn) (*OksClass::create_notify_fn)(c);
@@ -4679,7 +4674,7 @@ OksKernel::is_dangling(OksClass *c) const
 
 
 void
-OksKernel::get_all_classes(const std::vector<std::string>& names_in, oks::ClassSet& classes_out) const
+OksKernel::get_all_classes(const std::vector<std::string>& names_in, ClassSet& classes_out) const
 {
   for(std::vector<std::string>::const_iterator i = names_in.begin(); i != names_in.end(); ++i) {
     OksClass * c = find_class(*i);
@@ -4720,7 +4715,7 @@ ReposDirs::ReposDirs(const char * op, const char * cwd, OksKernel * kernel)
 {
   p_repository_root = OksKernel::get_repository_root().c_str();
   if(OksKernel::get_repository_root().empty()) {
-    throw oks::RepositoryOperationFailed(op, "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed(op, "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
   }
   else {
     p_repos_dir_len = strlen(p_repository_root);
@@ -4728,7 +4723,7 @@ ReposDirs::ReposDirs(const char * op, const char * cwd, OksKernel * kernel)
 
   p_user_repository_root = kernel->get_user_repository_root().c_str();
   if(!*p_user_repository_root) {
-    throw oks::RepositoryOperationFailed(op, "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed(op, "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
   }
   else {
     p_user_dir_len = strlen(p_user_repository_root);
@@ -4740,8 +4735,8 @@ ReposDirs::ReposDirs(const char * op, const char * cwd, OksKernel * kernel)
     if(int result = chdir(p_user_repository_root)) {
       p_mutex.unlock();
       std::ostringstream text;
-      text << "chdir (\'" << p_user_repository_root << "\') failed with code " << result << ": " << oks::strerror(errno);
-      throw oks::RepositoryOperationFailed(op, text.str());
+      text << "chdir (\'" << p_user_repository_root << "\') failed with code " << result << ": " << strerror(errno);
+      throw RepositoryOperationFailed(op, text.str());
     }
     p_dir = cwd;
     TLOG_DEBUG( 2 ) << "change cwd: \"" << p_user_repository_root << '\"' ;
@@ -4757,7 +4752,7 @@ ReposDirs::~ReposDirs()
   if(p_dir) {
     if(int result = chdir(p_dir)) {
       Oks::error_msg("ReposDirs::~ReposDirs()")
-        << "chdir (\'" << p_dir << "\') failed with code " << result << ": " << oks::strerror(errno) << std::endl;
+        << "chdir (\'" << p_dir << "\') failed with code " << result << ": " << strerror(errno) << std::endl;
     }
     TLOG_DEBUG( 2 ) << "restore cwd: \"" << p_dir  << '\"' ;
   }
@@ -4789,7 +4784,7 @@ struct CommandOutput {
 CommandOutput::CommandOutput(const char *command_name, const OksKernel *k, std::string &cmd) :
 p_command(cmd), p_command_name(command_name)
 {
-  p_file_name = oks::get_temporary_dir() + '/' + command_name + '.' + std::to_string(getpid()) + ':' +  std::to_string(reinterpret_cast<std::uintptr_t>(k)) + ".txt";
+  p_file_name = get_temporary_dir() + '/' + command_name + '.' + std::to_string(getpid()) + ':' +  std::to_string(reinterpret_cast<std::uintptr_t>(k)) + ".txt";
 
   p_command.append(" &>");
   p_command.append(p_file_name);
@@ -4853,14 +4848,14 @@ CommandOutput::check_command_status(int status)
   if (status == -1)
     {
       std::ostringstream text;
-      text << "cannot execute command \'" << p_command << "\': " << oks::strerror(errno);
-      throw oks::RepositoryOperationFailed(p_command_name, text.str());
+      text << "cannot execute command \'" << p_command << "\': " << strerror(errno);
+      throw RepositoryOperationFailed(p_command_name, text.str());
     }
   else if (int error_code = WEXITSTATUS(status))
     {
       std::ostringstream text;
       text << p_command.substr(0, p_command.find_first_of(' ')) << " exit with error code " << error_code << ", output:\n" << cat2str();
-      throw oks::RepositoryOperationFailed(p_command_name, text.str());
+      throw RepositoryOperationFailed(p_command_name, text.str());
     }
 }
 
@@ -4887,7 +4882,7 @@ void
 OksKernel::k_checkout_repository(const std::string& param, const std::string& val, const std::string& branch_name)
 {
   if (get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("checkout", "the repository root is not set");
+    throw RepositoryOperationFailed("checkout", "the repository root is not set");
 
   ReposDirs reps("checkout", s_cwd, this);
 
@@ -4919,7 +4914,7 @@ OksKernel::k_checkout_repository(const std::string& param, const std::string& va
   if (!p_silence)
     {
       std::lock_guard lock(p_parallel_out_mutex);
-      oks::log_timestamp() << "[OKS checkout] => " << cmd << std::endl;
+      log_timestamp() << "[OKS checkout] => " << cmd << std::endl;
     }
 
   CommandOutput cmd_out("oks-checkout", this, cmd);
@@ -4931,7 +4926,7 @@ OksKernel::k_checkout_repository(const std::string& param, const std::string& va
     {
       std::lock_guard lock(p_parallel_out_mutex);
       std::cout << cmd_out.cat2str();
-      oks::log_timestamp() << "[OKS checkout] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
+      log_timestamp() << "[OKS checkout] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
     }
 
   static std::string version_prefix("checkout oks version ");
@@ -4941,7 +4936,7 @@ OksKernel::k_checkout_repository(const std::string& param, const std::string& va
   if (pos == 0)
     p_repository_version = version.substr(version_prefix.size());
   else
-    throw oks::RepositoryOperationFailed("checkout", "cannot read oks version");
+    throw RepositoryOperationFailed("checkout", "cannot read oks version");
 }
 
 void
@@ -4949,8 +4944,8 @@ OksKernel::remove_user_repository_dir()
 {
   if (p_allow_repository && p_user_repository_root_created)
     {
-      oks::s_git_folders.remove(p_user_repository_root);
-      oks::s_git_folders.erase(p_user_repository_root);
+      s_git_folders.remove(p_user_repository_root);
+      s_git_folders.erase(p_user_repository_root);
       p_user_repository_root_created = false;
     }
 }
@@ -4958,7 +4953,7 @@ OksKernel::remove_user_repository_dir()
 void
 OksKernel::unset_repository_created()
 {
-  oks::s_git_folders.erase(p_user_repository_root);
+  s_git_folders.erase(p_user_repository_root);
   p_user_repository_root_created = false;
 }
 
@@ -4983,7 +4978,7 @@ OksKernel::k_copy_repository(const std::string& source, const std::string& desti
 
   if(!p_silence) {
     std::lock_guard lock(p_parallel_out_mutex);
-    oks::log_timestamp() << "[OKS copy] => " << cmd << std::endl;
+    log_timestamp() << "[OKS copy] => " << cmd << std::endl;
   }
 
   CommandOutput cmd_out("oks-copy", this, cmd);
@@ -4992,7 +4987,7 @@ OksKernel::k_copy_repository(const std::string& source, const std::string& desti
   if(!p_silence) {
     std::lock_guard lock(p_parallel_out_mutex);
     std::cout << cmd_out.cat2str();
-    oks::log_timestamp() << "[OKS copy] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
+    log_timestamp() << "[OKS copy] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
   }
 }
 
@@ -5003,10 +4998,10 @@ OksKernel::update_repository(const std::string& param, const std::string& val, R
   std::unique_lock lock(p_kernel_mutex);
 
   if (OksKernel::get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("update", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed("update", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
 
   if (get_user_repository_root().empty())
-    throw oks::RepositoryOperationFailed("update", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed("update", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
 
   std::string cmd("oks-update.sh");
 
@@ -5035,7 +5030,7 @@ OksKernel::update_repository(const std::string& param, const std::string& val, R
 
   if (!p_silence) {
     std::lock_guard lock(p_parallel_out_mutex);
-    oks::log_timestamp() << "[OKS update] => " << cmd << std::endl;
+    log_timestamp() << "[OKS update] => " << cmd << std::endl;
   }
 
   CommandOutput cmd_out("oks-update", this, cmd);
@@ -5050,13 +5045,13 @@ OksKernel::update_repository(const std::string& param, const std::string& val, R
   if(pos == 0)
     p_repository_version = version.substr(version_prefix.size());
   else
-    throw oks::RepositoryOperationFailed("commit", "cannot read oks version");
+    throw RepositoryOperationFailed("commit", "cannot read oks version");
 
   if (!p_silence)
     {
       std::lock_guard lock(p_parallel_out_mutex);
       std::cout << cmd_out.cat2str();
-      oks::log_timestamp() << "[OKS update] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
+      log_timestamp() << "[OKS update] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
     }
 }
 
@@ -5066,10 +5061,10 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   std::unique_lock lock(p_kernel_mutex);
 
   if (OksKernel::get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("commit", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed("commit", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
 
   if (get_user_repository_root().empty())
-    throw oks::RepositoryOperationFailed("commit", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed("commit", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
 
   std::string cmd("oks-commit.sh");
 
@@ -5080,9 +5075,9 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   cmd.append(get_user_repository_root());
 
   if(comments.empty() || std::all_of(comments.begin(), comments.end(), [](char c) { return std::isspace(c); }))
-    throw oks::RepositoryOperationFailed("commit", "the commit message may not be empty");
+    throw RepositoryOperationFailed("commit", "the commit message may not be empty");
 
-  const std::string log_file_name(oks::get_temporary_dir() + '/' + "oks-commit-msg." + std::to_string(getpid()) + ':' +  std::to_string(reinterpret_cast<std::uintptr_t>(this)) + ".txt");
+  const std::string log_file_name(get_temporary_dir() + '/' + "oks-commit-msg." + std::to_string(getpid()) + ':' +  std::to_string(reinterpret_cast<std::uintptr_t>(this)) + ".txt");
 
   try
     {
@@ -5100,7 +5095,7 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
     {
       std::ostringstream ss;
       ss << "cannot write to file \'" << log_file_name << "\' to save commit message: " << ex.what();
-      throw oks::RepositoryOperationFailed("commit", ss.str());
+      throw RepositoryOperationFailed("commit", ss.str());
     }
 
   cmd.append(" -f \'");
@@ -5163,7 +5158,7 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   //       {
   //         std::ostringstream text;
   //         text << '\t' << ex;
-  //         throw oks::RepositoryOperationFailed("commit", text.str());
+  //         throw RepositoryOperationFailed("commit", text.str());
   //       }
   //   }
 
@@ -5172,7 +5167,7 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   if (!p_silence)
     {
       std::lock_guard lock(p_parallel_out_mutex);
-      oks::log_timestamp() << "[OKS commit] => " << cmd << std::endl;
+      log_timestamp() << "[OKS commit] => " << cmd << std::endl;
     }
 
   CommandOutput cmd_out("oks-commit", this, cmd);
@@ -5192,7 +5187,7 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
     {
       std::lock_guard lock(p_parallel_out_mutex);
       std::cout << cmd_out.cat2str();
-      oks::log_timestamp() << "[OKS commit] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
+      log_timestamp() << "[OKS commit] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
    }
 
   static std::string version_prefix("commit oks version ");
@@ -5202,7 +5197,7 @@ OksKernel::commit_repository(const std::string& comments, const std::string& cre
   if(pos == 0)
     p_repository_version = version.substr(version_prefix.size());
   else
-    throw oks::RepositoryOperationFailed("commit", "cannot read oks version");
+    throw RepositoryOperationFailed("commit", "cannot read oks version");
 }
 
 void
@@ -5211,10 +5206,10 @@ OksKernel::tag_repository(const std::string& tag)
   std::unique_lock lock(p_kernel_mutex);
 
   if (OksKernel::get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("tag", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed("tag", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
 
   if (get_user_repository_root().empty())
-    throw oks::RepositoryOperationFailed("tag", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed("tag", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
 
   std::string cmd("oks-tag.sh");
 
@@ -5225,7 +5220,7 @@ OksKernel::tag_repository(const std::string& tag)
   cmd.append(get_user_repository_root());
 
   if(tag.empty() || std::all_of(tag.begin(), tag.end(), [](char c) { return std::isspace(c); }))
-    throw oks::RepositoryOperationFailed("tag", "the tag may not be empty");
+    throw RepositoryOperationFailed("tag", "the tag may not be empty");
 
   cmd.append(" -t \'");
   cmd.append(tag);
@@ -5238,7 +5233,7 @@ OksKernel::tag_repository(const std::string& tag)
   if (!p_silence)
     {
       std::lock_guard lock(p_parallel_out_mutex);
-      oks::log_timestamp() << "[OKS tag] => " << cmd << std::endl;
+      log_timestamp() << "[OKS tag] => " << cmd << std::endl;
     }
 
   CommandOutput cmd_out("oks-tag", this, cmd);
@@ -5248,7 +5243,7 @@ OksKernel::tag_repository(const std::string& tag)
     {
       std::lock_guard lock(p_parallel_out_mutex);
       std::cout << cmd_out.cat2str();
-      oks::log_timestamp() << "[OKS tag] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
+      log_timestamp() << "[OKS tag] => done in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-start_usage).count() / 1000. << " ms" << std::endl;
    }
 }
 
@@ -5258,10 +5253,10 @@ OksKernel::get_repository_versions_diff(const std::string& sha1, const std::stri
   std::unique_lock lock(p_kernel_mutex);
 
   if (OksKernel::get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("diff", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed("diff", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
 
   if (get_user_repository_root().empty())
-    throw oks::RepositoryOperationFailed("diff", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed("diff", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
 
   std::string cmd("oks-diff.sh");
 
@@ -5311,7 +5306,7 @@ OksKernel::get_repository_versions_diff(const std::string& sha1, const std::stri
     {
       std::ostringstream text;
       text << "cannot find \"" << diff_pattern << "\" pattern in output of oks-diff.sh:\n" << output;
-      throw oks::RepositoryOperationFailed("get_diff", text.str());
+      throw RepositoryOperationFailed("get_diff", text.str());
     }
 
   std::list<std::string> result;
@@ -5366,7 +5361,7 @@ OksKernel::get_repository_versions(bool skip_irrelevant, const std::string& comm
     {
       std::ostringstream text;
       text << "cannot find \"git log\" pattern in output of oks-log.sh:\n" << output;
-      throw oks::RepositoryOperationFailed("log", text.str());
+      throw RepositoryOperationFailed("log", text.str());
     }
 
   std::set<std::string> loaded_files;
@@ -5423,7 +5418,7 @@ OksKernel::get_repository_versions(bool skip_irrelevant, const std::string& comm
             {
               std::ostringstream text;
               text << "unexpected line \"" << line << "\" in output of oks-log.sh:\n" << output;
-              throw oks::RepositoryOperationFailed("log", text.str());
+              throw RepositoryOperationFailed("log", text.str());
             }
         }
       else
@@ -5518,10 +5513,10 @@ OksKernel::read_repository_version()
   std::unique_lock lock(p_kernel_mutex);
 
   if (OksKernel::get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("status", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed("status", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
 
   if (get_user_repository_root().empty())
-    throw oks::RepositoryOperationFailed("status", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed("status", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
 
   std::string cmd("oks-version.sh");
 
@@ -5543,7 +5538,7 @@ OksKernel::read_repository_version()
     {
       std::ostringstream text;
       text << "cannot read oks version from oks-version.sh output: \"" << output << '\"';
-      throw oks::RepositoryOperationFailed("get version", text.str().c_str());
+      throw RepositoryOperationFailed("get version", text.str().c_str());
     }
 
   return p_repository_version;
@@ -5555,10 +5550,10 @@ void OksKernel::get_updated_repository_files(std::set<std::string>& updated, std
   std::unique_lock lock(p_kernel_mutex);
 
   if (OksKernel::get_repository_root().empty())
-    throw oks::RepositoryOperationFailed("status", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
+    throw RepositoryOperationFailed("status", "the repository-root is not set (check environment variable TDAQ_DB_REPOSITORY)");
 
   if (get_user_repository_root().empty())
-    throw oks::RepositoryOperationFailed("status", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
+    throw RepositoryOperationFailed("status", "the user-repository-root is not set (check environment variable TDAQ_DB_USER_REPOSITORY)");
 
   std::string cmd("oks-status.sh");
 
@@ -5593,7 +5588,7 @@ void OksKernel::get_updated_repository_files(std::set<std::string>& updated, std
     {
       std::ostringstream text;
       text << "cannot find \"" << diff_pattern << "\" pattern in output of oks-status.sh:\n" << output;
-      throw oks::RepositoryOperationFailed("status", text.str());
+      throw RepositoryOperationFailed("status", text.str());
     }
 
   std::list<std::string> result;
@@ -5610,7 +5605,7 @@ void OksKernel::get_updated_repository_files(std::set<std::string>& updated, std
         {
           std::ostringstream text;
           text << "unexpected output \"" << line << "\" in output of oks-status.sh:\n" << output;
-          throw oks::RepositoryOperationFailed("status", text.str());
+          throw RepositoryOperationFailed("status", text.str());
         }
     }
 }
@@ -5726,7 +5721,7 @@ OksKernel::k_check_bind_classes_status() const noexcept
 
 
 std::ostream&
-oks::log_timestamp(oks::__LogSeverity__ severity)
+log_timestamp(__LogSeverity__ severity)
 {
   auto now(std::chrono::system_clock::now());
   auto time_since_epoch(now.time_since_epoch());
@@ -5738,9 +5733,12 @@ oks::log_timestamp(oks::__LogSeverity__ severity)
   std::size_t len = std::strftime(buff, 128 - 16, "%Y-%b-%d %H:%M:%S.", std::localtime(&now_t));
   sprintf(buff+len, "%03d ", (int)(std::chrono::duration_cast<std::chrono::milliseconds>(time_since_epoch).count() - seconds_since_epoch.count()*1000));
 
-  std::ostream& s (severity <= oks::Warning ? std::cerr : std::cout);
+  std::ostream& s (severity <= Warning ? std::cerr : std::cout);
 
-  s << buff << (severity == oks::Error ? "ERROR " : severity == oks::Warning ? "WARNING " : severity == oks::Debug ? "DEBUG " : "");
+  s << buff << (severity == Error ? "ERROR " : severity == Warning ? "WARNING " : severity == Debug ? "DEBUG " : "");
 
   return s;
 }
+
+} // namespace oks
+} // namespace dunedaq

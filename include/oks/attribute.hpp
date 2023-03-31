@@ -18,6 +18,9 @@
 
 #include <boost/regex.hpp>
 
+namespace dunedaq {
+namespace oks {
+
 
 class OksXmlOutputStream;
 class OksXmlInputStream;
@@ -708,5 +711,8 @@ OksData::ReadFrom(const std::string& s, const OksAttribute * a)
   else
     SetValue(s.c_str(), a);
 }
+
+} // namespace oks
+} // namespace dunedaq
 
 #endif

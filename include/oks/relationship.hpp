@@ -14,6 +14,8 @@
 
 #include <string>
 
+namespace dunedaq {
+namespace oks {
 
 class	OksClass;
 class   OksXmlOutputStream;
@@ -394,5 +396,6 @@ class OksRelationship
 
 };
 
-
+} // namespace oks
+} // namespace dunedaq
 #endif

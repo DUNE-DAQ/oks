@@ -30,6 +30,8 @@
 #include "oks/exceptions.hpp"
 
 
+namespace dunedaq {
+namespace oks {
   //
   // Forward declarations
   //
@@ -41,8 +43,6 @@ class	OksPipeline;
 
 
   /// @addtogroup oks
-
-namespace oks {
 
     /**
      *  @ingroup oks
@@ -389,7 +389,6 @@ namespace oks {
   std::ostream&
   log_timestamp(__LogSeverity__ severity = Log);
 
-}
 
 
   /**
@@ -1835,7 +1834,7 @@ class OksKernel
        *  \param classes_out  the output containing pointers to all classes by above names and their subclasses
        */
 
-    void get_all_classes(const std::vector<std::string>& names_in, oks::ClassSet& classes_out) const;
+    void get_all_classes(const std::vector<std::string>& names_in, ClassSet& classes_out) const;
 
 
      /**
@@ -2075,7 +2074,7 @@ class OksKernel
     std::string p_bind_objects_status;
     mutable std::string p_bind_classes_status;
 
-    oks::LoadErrors p_load_errors;
+    LoadErrors p_load_errors;
 
     std::map<const OksFile *, OksFile *> p_preload_file_info;
     std::vector<OksFile *>  p_preload_added_files;
@@ -2213,5 +2212,8 @@ OksKernel::subscribe_delete_class(void (*f)(OksClass *))
 {
   OksClass::delete_notify_fn = f;
 }
+
+} // namespace oks
+} // namespace dunedaq
 
 #endif

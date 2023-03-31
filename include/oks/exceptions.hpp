@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 
+namespace dunedaq {
 namespace oks {
 
     /** Generic OKS exception. **/
@@ -45,7 +46,7 @@ namespace oks {
   inline void validate_not_empty(const std::string& value, const char * name) {
     if(value.empty()) throw_validate_not_empty(name);
   }
-}
-
+} //namespace oks
+} //namespace dunedaq
 
 #endif

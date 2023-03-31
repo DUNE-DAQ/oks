@@ -18,6 +18,7 @@
    *  This software was developed for the ATLAS experiment at CERN.
    */
 
+namespace dunedaq {
 namespace oks
 {
   /**
@@ -26,7 +27,6 @@ namespace oks
 
   const std::string
   strerror(int error);
-}
 
 
   /// @addtogroup oks
@@ -76,6 +76,9 @@ class Oks {
 };
 
 
+} // namespace oks
+} // namespace dunedaq
+
 
     // defines MACRO and CONSTANTS for verbose report
 
@@ -95,6 +98,5 @@ class Oks {
 #else
 # define OSK_PROFILING(FID, K)		;
 #endif
-
 
 #endif
