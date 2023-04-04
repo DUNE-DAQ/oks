@@ -18,6 +18,8 @@
 
 #include <boost/regex.hpp>
 
+namespace dunedaq {
+namespace oks {
 
 class OksQueryExpression;
 
@@ -301,8 +303,6 @@ class OksOrExpression : public OksQueryExpression, public OksListBaseQueryExpres
 inline OksQuery::~OksQuery() {delete p_expression;}
 
 
-namespace oks {
-
     /**
      *  The exception is thrown when parsing of query object
      *  (QueryPath object) from string is failed.
@@ -399,9 +399,9 @@ namespace oks {
   };
 
 
-}
-
 std::ostream& operator<<(std::ostream&, const oks::QueryPathExpression&);
 std::ostream& operator<<(std::ostream&, const oks::QueryPath&);
 
+} // namespace oks
+} // namespace dunedaq
 #endif

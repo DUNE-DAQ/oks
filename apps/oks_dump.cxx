@@ -19,6 +19,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+using namespace dunedaq::oks;
+
 enum __OksDumpExitStatus__ {
   __Success__ = 0,
   __BadCommandLine__,
@@ -272,7 +274,7 @@ main(int argc, char **argv)
 		
 	        if(recursion_depth > 0 || print_referenced_by) {
 		  if(recursion_depth) {
-                    oks::ClassSet all_ref_classes;
+                    ClassSet all_ref_classes;
                     kernel.get_all_classes(ref_classes, all_ref_classes);
 	            OksObject::FSet refs;
 		    o->references(refs, recursion_depth, false, &all_ref_classes);
@@ -324,7 +326,7 @@ main(int argc, char **argv)
     else if(object_from && *object_from && path_query && *path_query) {
       OksObject * obj_from = find_object((char *)object_from, kernel);
       try {
-        oks::QueryPath q(path_query, kernel);
+        QueryPath q(path_query, kernel);
         OksObject::List * objs = obj_from->find_path(q);
 
         size_t num = (objs ? objs->size() : 0);
@@ -339,7 +341,7 @@ main(int argc, char **argv)
           delete objs;
         }
       }
-      catch ( oks::bad_query_syntax& e ) {
+      catch ( bad_query_syntax& e ) {
         Oks::error_msg("oks_dump") << "\tFailed to parse query: " << e.what() << std::endl;
         return __BadQuery__;
       }
@@ -363,7 +365,7 @@ main(int argc, char **argv)
         return __FoundDanglingReferences__;
       }
   }
-  catch (oks::exception & ex) {
+  catch (exception & ex) {
     std::cerr << "Caught oks exception:\n" << ex << std::endl;
     return __ExceptionCaught__;
   }

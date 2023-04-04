@@ -3,6 +3,9 @@
 #include "oks/profiler.hpp"
 #include "oks/kernel.hpp"
 
+namespace dunedaq {
+namespace oks {
+
 static const char *OksProfilerFunctionsStr[] = {
   "OksKernel::Destructor",
   "OksKernel::operator<<",
@@ -181,3 +184,6 @@ OksFunctionProfiler::~OksFunctionProfiler()
   if(kernel && kernel->get_profiling_mode())
     kernel->GetOksProfiler()->Stop(func_id, p_start_time_point);
 }
+
+} // namespace oks
+} // namespace dunedaq

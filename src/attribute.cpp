@@ -14,6 +14,9 @@
 
 #include <string.h>
 
+namespace dunedaq {
+namespace oks {
+
 
 const char * OksAttribute::bool_type	= "bool";
 const char * OksAttribute::s8_int_type	= "s8";
@@ -49,8 +52,8 @@ OksAttribute::Format
 OksAttribute::str2format(const char * s) noexcept
 {
   return (
-    oks::cmp_str3(s, "dec") ? Dec :
-    oks::cmp_str3(s, "hex") ? Hex :
+    cmp_str3(s, "dec") ? Dec :
+    cmp_str3(s, "hex") ? Hex :
     Oct
   );
 }
@@ -212,7 +215,7 @@ OksAttribute::OksAttribute(const std::string& nm, OksClass * p) :
   p_ordered        (false)
 
 {
-  oks::validate_not_empty(p_name, "attribute name");
+  validate_not_empty(p_name, "attribute name");
 }
 
 
@@ -233,7 +236,7 @@ OksAttribute::OksAttribute(const std::string& nm, const std::string& t, bool is_
   p_ordered        (false)
 {
   set_type(t, true);
-  oks::validate_not_empty(p_name, "attribute name");
+  validate_not_empty(p_name, "attribute name");
   init_enum();
   init_range();
   // cannot call set_init_data() because of the CLASS data type, since other class may not be known yet;
@@ -314,16 +317,16 @@ OksAttribute::save(OksXmlOutputStream& s) const
     s.put_attribute(format_xml_attr, sizeof(format_xml_attr) - 1, format2str(p_format));
 
   if (p_multi_values)
-    s.put_attribute(is_multi_value_xml_attr, sizeof(is_multi_value_xml_attr) - 1, oks::xml::bool2str(p_multi_values));
+    s.put_attribute(is_multi_value_xml_attr, sizeof(is_multi_value_xml_attr) - 1, xml::bool2str(p_multi_values));
 
   if (!p_init_value.empty())
     s.put_attribute(init_value_xml_attr, sizeof(init_value_xml_attr) - 1, p_init_value.c_str());
 
   if (p_no_null)
-    s.put_attribute(is_not_null_xml_attr, sizeof(is_not_null_xml_attr) - 1, oks::xml::bool2str(p_no_null));
+    s.put_attribute(is_not_null_xml_attr, sizeof(is_not_null_xml_attr) - 1, xml::bool2str(p_no_null));
 
   if (p_ordered)
-    s.put_attribute(ordered_xml_attr, sizeof(ordered_xml_attr) - 1, oks::xml::bool2str(p_ordered));
+    s.put_attribute(ordered_xml_attr, sizeof(ordered_xml_attr) - 1, xml::bool2str(p_ordered));
 
   s.put_end_tag();
 }
@@ -349,68 +352,68 @@ OksAttribute::OksAttribute(OksXmlInputStream& s, OksClass *parent) :
 
           // check for close of tag
 
-          if (oks::cmp_str1(attr.name(), "/"))
+          if (cmp_str1(attr.name(), "/"))
             {
               break;
             }
 
           // check for known oks-attribute' attributes
 
-          else if (oks::cmp_str4(attr.name(), name_xml_attr))
+          else if (cmp_str4(attr.name(), name_xml_attr))
             p_name.assign(attr.value(), attr.value_len());
-          else if (oks::cmp_str11(attr.name(), description_xml_attr))
+          else if (cmp_str11(attr.name(), description_xml_attr))
             p_description.assign(attr.value(), attr.value_len());
-          else if (oks::cmp_str4(attr.name(), type_xml_attr))
+          else if (cmp_str4(attr.name(), type_xml_attr))
             {
               __set_data_type(attr.value(), attr.value_len());
               if (p_data_type == OksData::unknown_type)
                 {
-                  throw oks::BadFileData(std::string("Value \'") + attr.value() + "\' is not a valid attribute type", s.get_line_no(), s.get_line_pos());
+                  throw BadFileData(std::string("Value \'") + attr.value() + "\' is not a valid attribute type", s.get_line_no(), s.get_line_pos());
                 }
             }
-          else if (oks::cmp_str5(attr.name(), range_xml_attr))
+          else if (cmp_str5(attr.name(), range_xml_attr))
             p_range.assign(attr.value(), attr.value_len());
-          else if (oks::cmp_str6(attr.name(), format_xml_attr))
+          else if (cmp_str6(attr.name(), format_xml_attr))
             p_format = str2format(attr.value());
-          else if (oks::cmp_str14(attr.name(), is_multi_value_xml_attr))
-            p_multi_values = oks::xml::str2bool(attr.value());
-          else if (oks::cmp_str10(attr.name(), init_value_xml_attr))
+          else if (cmp_str14(attr.name(), is_multi_value_xml_attr))
+            p_multi_values = xml::str2bool(attr.value());
+          else if (cmp_str10(attr.name(), init_value_xml_attr))
             p_init_value.assign(attr.value(), attr.value_len());
-          else if (oks::cmp_str11(attr.name(), is_not_null_xml_attr))
-            p_no_null = oks::xml::str2bool(attr.value());
-          else if (oks::cmp_str7(attr.name(), ordered_xml_attr))
-            p_ordered = oks::xml::str2bool(attr.value());
+          else if (cmp_str11(attr.name(), is_not_null_xml_attr))
+            p_no_null = xml::str2bool(attr.value());
+          else if (cmp_str7(attr.name(), ordered_xml_attr))
+            p_ordered = xml::str2bool(attr.value());
           else if (!strcmp(attr.name(), "multi-value-implementation"))
             s.error_msg("OksAttribute::OksAttribute(OksXmlInputStream&)") << "Obsolete oks-attribute\'s attribute \'" << attr.name() << "\'\n";
           else
             s.throw_unexpected_attribute(attr.name());
         }
     }
-  catch (oks::exception & e)
+  catch (exception & e)
     {
-      throw oks::FailedRead("xml attribute", e);
+      throw FailedRead("xml attribute", e);
     }
   catch (std::exception & e)
     {
-      throw oks::FailedRead("xml attribute", e.what());
+      throw FailedRead("xml attribute", e.what());
     }
 
   // check validity of read values
 
   if (p_data_type == OksData::unknown_type)
     {
-      throw oks::FailedRead("oks attribute", oks::BadFileData("attribute type is not set", s.get_line_no(), s.get_line_pos()));
+      throw FailedRead("oks attribute", BadFileData("attribute type is not set", s.get_line_no(), s.get_line_pos()));
     }
 
   try
     {
-      oks::validate_not_empty(p_name, "attribute name");
+      validate_not_empty(p_name, "attribute name");
       init_enum();
       init_range();
     }
   catch (std::exception& ex)
     {
-      throw oks::FailedRead("oks attribute", oks::BadFileData(ex.what(), s.get_line_no(), s.get_line_pos()));
+      throw FailedRead("oks attribute", BadFileData(ex.what(), s.get_line_no(), s.get_line_pos()));
     }
 
   if (p_init_value.empty())
@@ -419,7 +422,7 @@ OksAttribute::OksAttribute(OksXmlInputStream& s, OksClass *parent) :
         {
           std::ostringstream text;
           text << "single-value attribute \"" << p_name << "\" is of \"class_type\" and has empty init value";
-          throw oks::FailedRead("oks attribute", oks::BadFileData(text.str(), s.get_line_no(), s.get_line_pos()));
+          throw FailedRead("oks attribute", BadFileData(text.str(), s.get_line_no(), s.get_line_pos()));
         }
     }
   else
@@ -439,11 +442,11 @@ OksAttribute::OksAttribute(OksXmlInputStream& s, OksClass *parent) :
                   _d.SetValue(p_init_value.c_str(), 0);
                 }
             }
-          catch (oks::exception& ex)
+          catch (exception& ex)
             {
               std::ostringstream text;
               text << "attribute \"" << p_name << "\" has bad init value:\n" << ex.what();
-              throw oks::FailedRead("oks attribute", oks::BadFileData(text.str(), s.get_line_no(), s.get_line_pos()));
+              throw FailedRead("oks attribute", BadFileData(text.str(), s.get_line_no(), s.get_line_pos()));
             }
         }
     }
@@ -456,7 +459,7 @@ OksAttribute::OksAttribute(OksXmlInputStream& s, OksClass *parent) :
     {
       std::ostringstream text;
       text << "attribute \"" << p_name << "\" has mismatch between init value and range:\n" << ex.what();
-      throw oks::FailedRead("oks attribute", oks::BadFileData(text.str(), s.get_line_no(), s.get_line_pos()));
+      throw FailedRead("oks attribute", BadFileData(text.str(), s.get_line_no(), s.get_line_pos()));
     }
 
 //  set_init_data();
@@ -475,35 +478,35 @@ OksAttribute::get_data_type(const char * t, size_t len) noexcept
 {
   switch(len) {
     case 3:
-      if     ( oks::cmp_str3n  (t, uid_type)     ) return OksData::uid2_type;     // "uid"
-      else if( oks::cmp_str3n  (t, u32_int_type) ) return OksData::u32_int_type;  // "u32"
-      else if( oks::cmp_str3n  (t, s32_int_type) ) return OksData::s32_int_type;  // "s32"
-      else if( oks::cmp_str3n  (t, u16_int_type) ) return OksData::u16_int_type;  // "u16"
-      else if( oks::cmp_str3n  (t, s16_int_type) ) return OksData::s16_int_type;  // "s16"
-      else if( oks::cmp_str3n  (t, s64_int_type) ) return OksData::s64_int_type;  // "s64"
-      else if( oks::cmp_str3n  (t, u64_int_type) ) return OksData::u64_int_type;  // "u64"
+      if     ( cmp_str3n  (t, uid_type)     ) return OksData::uid2_type;     // "uid"
+      else if( cmp_str3n  (t, u32_int_type) ) return OksData::u32_int_type;  // "u32"
+      else if( cmp_str3n  (t, s32_int_type) ) return OksData::s32_int_type;  // "s32"
+      else if( cmp_str3n  (t, u16_int_type) ) return OksData::u16_int_type;  // "u16"
+      else if( cmp_str3n  (t, s16_int_type) ) return OksData::s16_int_type;  // "s16"
+      else if( cmp_str3n  (t, s64_int_type) ) return OksData::s64_int_type;  // "s64"
+      else if( cmp_str3n  (t, u64_int_type) ) return OksData::u64_int_type;  // "u64"
       break;
 
     case 6:
-      if(      oks::cmp_str6n  (t, string_type)  ) return OksData::string_type;   // "string"
-      else if( oks::cmp_str6n  (t, double_type)  ) return OksData::double_type;   // "double"
+      if(      cmp_str6n  (t, string_type)  ) return OksData::string_type;   // "string"
+      else if( cmp_str6n  (t, double_type)  ) return OksData::double_type;   // "double"
       break;
 
     case 4:
-      if(      oks::cmp_str4n (t, bool_type)     ) return OksData::bool_type;    // "bool"
-      else if( oks::cmp_str4n (t, enum_type)     ) return OksData::enum_type;    // "enum"
-      else if( oks::cmp_str4n (t, date_type)     ) return OksData::date_type;    // "date"
-      else if( oks::cmp_str4n (t, time_type)     ) return OksData::time_type;    // "time"
+      if(      cmp_str4n (t, bool_type)     ) return OksData::bool_type;    // "bool"
+      else if( cmp_str4n (t, enum_type)     ) return OksData::enum_type;    // "enum"
+      else if( cmp_str4n (t, date_type)     ) return OksData::date_type;    // "date"
+      else if( cmp_str4n (t, time_type)     ) return OksData::time_type;    // "time"
       break;
 
     case 5:
-      if(      oks::cmp_str5n  (t, float_type)   ) return OksData::float_type;   // "float"
-      else if( oks::cmp_str5n  (t, class_type)   ) return OksData::class_type;   // "class"
+      if(      cmp_str5n  (t, float_type)   ) return OksData::float_type;   // "float"
+      else if( cmp_str5n  (t, class_type)   ) return OksData::class_type;   // "class"
       break;
 
     case 2:
-      if(      oks::cmp_str2n  (t, s8_int_type)  ) return OksData::s8_int_type;  // "s8"
-      else if( oks::cmp_str2n  (t, u8_int_type)  ) return OksData::u8_int_type;  // "u8"
+      if(      cmp_str2n  (t, s8_int_type)  ) return OksData::s8_int_type;  // "s8"
+      else if( cmp_str2n  (t, u8_int_type)  ) return OksData::u8_int_type;  // "u8"
       break;
   }
 
@@ -551,7 +554,7 @@ OksAttribute::set_type(const std::string& t, bool skip_init)
     {
       std::ostringstream text;
       text << "the type \'" << t << "\' is not valid";
-      throw oks::SetOperationFailed("OksAttribute::set_type", text.str());
+      throw SetOperationFailed("OksAttribute::set_type", text.str());
     }
 
   if (p_data_type == p_dt)
@@ -571,7 +574,7 @@ OksAttribute::set_type(const std::string& t, bool skip_init)
         }
       catch (std::exception& ex)
         {
-          throw oks::SetOperationFailed("OksAttribute::set_type", ex.what());
+          throw SetOperationFailed("OksAttribute::set_type", ex.what());
         }
     }
 
@@ -599,11 +602,11 @@ OksAttribute::set_name(const std::string& new_name)
 
       try
         {
-          oks::validate_not_empty(new_name, "name");
+          validate_not_empty(new_name, "name");
         }
       catch (std::exception& ex)
         {
-          throw oks::SetOperationFailed("OksAttribute::set_name", ex.what());
+          throw SetOperationFailed("OksAttribute::set_name", ex.what());
         }
 
       // having a direct attribute with the same name is an error
@@ -612,7 +615,7 @@ OksAttribute::set_name(const std::string& new_name)
         {
           std::ostringstream text;
           text << "Class \"" << p_class->get_name() << "\" already has direct attribute \"" << new_name << '\"';
-          throw oks::SetOperationFailed("OksAttribute::set_name", text.str());
+          throw SetOperationFailed("OksAttribute::set_name", text.str());
         }
 
       // check that the file can be updated
@@ -758,7 +761,7 @@ OksAttribute::set_range(const std::string& s)
           if (p_data_type == OksData::bool_type)
             {
               p_range.erase();
-              throw oks::SetOperationFailed("OksAttribute::set_range", "boolean type can't have user-defined range!");
+              throw SetOperationFailed("OksAttribute::set_range", "boolean type can't have user-defined range!");
             }
         }
 
@@ -790,7 +793,7 @@ OksAttribute::set_range(const std::string& s)
               ;
             }
 
-          throw oks::SetOperationFailed("OksAttribute::set_range", ex.what());
+          throw SetOperationFailed("OksAttribute::set_range", ex.what());
         }
 
       if (p_class)
@@ -928,7 +931,7 @@ OksRange::reset(const std::string& range, OksAttribute * a)
         }
       catch (std::exception& ex)
         {
-          throw oks::BadReqExp(range, ex.what());
+          throw BadReqExp(range, ex.what());
         }
     }
 }
@@ -971,3 +974,6 @@ OksRange::validate(const OksData& d) const
 
   return false;
 }
+
+} // namespace oks
+} // namespace dunedaq

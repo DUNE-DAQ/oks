@@ -16,9 +16,10 @@
 #include "ers/ers.hpp"
 #include "logging/Logging.hpp"
 
+namespace dunedaq {
+namespace oks {
 OksXmlTokenPool OksXmlInputStream::s_tokens_pool;
 
-namespace oks {
 
   namespace xml {
 
@@ -73,7 +74,6 @@ namespace oks {
     return (std::string("Read end-of-stream tag \'") + tag + '\'');
   }
 
-}
 
 static std::string
 report_unexpected(const char * what, const char expected, const char read)
@@ -625,3 +625,7 @@ OksXmlInputStream::__throw_strto(const char * f, const char * where, const char 
   if(errno) text << " with code " << errno << ", reason = \'" << oks::strerror(errno) << '\'';
   throw oks::BadFileData(text.str(), line_no, line_pos);
 }
+
+
+} // namespace oks
+} // namespace dunedaq

@@ -19,7 +19,8 @@
 #include <algorithm>
 #include <stdexcept>
 
-
+namespace dunedaq {
+namespace oks {
 
 const char OksClass::class_xml_tag[]        = "class";
 const char OksClass::name_xml_attr[]        = "name";
@@ -31,9 +32,6 @@ const char OksClass::superclass_xml_attr[]  = "superclass";
 OksClass::NotifyFN	 OksClass::create_notify_fn;
 OksClass::ChangeNotifyFN OksClass::change_notify_fn;
 OksClass::NotifyFN	 OksClass::delete_notify_fn;
-
-
-namespace oks {
 
   std::string
   CannotFindSuperClass::fill(const OksClass& c, const std::string& name) noexcept
@@ -73,7 +71,6 @@ namespace oks {
     return std::string("method \'") + op + "()\' failed because:\n" + reason;
   }
 
-}
 
 OksClass::OksClass(const std::string& nm, OksKernel * k, bool t) :
   p_name		  (nm),
@@ -2147,3 +2144,6 @@ OksClass::check_relationships(std::ostringstream & out, bool print_file_name) co
 
   return found_problems;
 }
+
+} // namespace oks
+} // namespace dunedaq

@@ -4,6 +4,8 @@
 #include "oks/attribute.hpp"
 #include "oks/class.hpp"
 
+namespace dunedaq {
+namespace oks {
 
 size_t
 OksIndex::get_offset(OksClass *cl, OksAttribute *a)
@@ -282,3 +284,6 @@ OksIndex::find_all(bool andOperation, OksData *d1, OksQuery::Comparator f1, OksD
 
   return olist;
 }
+
+} // namespace oks
+} // namespace dunedaq

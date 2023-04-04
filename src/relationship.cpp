@@ -8,6 +8,8 @@
 
 #include <sstream>
 
+namespace dunedaq {
+namespace oks {
 
 const char OksRelationship::relationship_xml_tag[]  = "relationship";
 const char OksRelationship::name_xml_attr[]         = "name";
@@ -356,3 +358,6 @@ OksRelationship::set_is_dependent(bool dp)
     if(p_class) p_class->registrate_class_change(OksClass::ChangeRelationshipDependent, (const void *)this);
   }
 }
+
+} // namespace oks
+} // namespace dunedaq

@@ -25,6 +25,8 @@
 #include "ers/ers.hpp"
 #include "logging/Logging.hpp"
 
+namespace dunedaq {
+namespace oks {
     //
     // Define XML formats used to store OKS schema and data files
     //
@@ -189,8 +191,6 @@ const char OksFile::xml_data_file_dtd[] =
   "]>";
 
 
-namespace oks {
-
   std::string
   FailedAddInclude::fill(const OksFile& file, const std::string& include_name, const std::string& reason) noexcept
   {
@@ -244,7 +244,6 @@ namespace oks {
   {
     return ( std::string("Failed to compare file \'") + src + "\' with \'" + dest + "\' because:\n" + reason);
   }
-}
 
 
 OksFile::OksFile(const std::string& s, const std::string& ln, const std::string& ft, const std::string& ff, OksKernel * k) :
@@ -1539,3 +1538,6 @@ OksFile::compare(const char * file1_name, const char * file2_name)
 
   return true;
 }
+
+} // namespace oks
+} // namespace dunedaq

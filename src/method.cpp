@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <sstream>
 
+namespace dunedaq {
+namespace oks {
 
 const char OksMethodImplementation::method_impl_xml_tag[] = "method-implementation";
 const char OksMethodImplementation::language_xml_attr[]   = "language";
@@ -482,3 +484,6 @@ OksMethodImplementation::set_body(const std::string& s)
     }
   }
 }
+
+} // namespace oks
+} // namespace dunedaq

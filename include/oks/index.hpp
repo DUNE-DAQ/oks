@@ -7,6 +7,8 @@
 
 #include <set>
 
+namespace dunedaq {
+namespace oks {
 class OksObjectSortBy {
 
   public:
@@ -92,5 +94,6 @@ class OksObjectSortBy {
     static size_t       get_offset(OksClass *, OksAttribute *);
 
 };
-
+} // namespace oks
+} // namespace dunedaq
 #endif

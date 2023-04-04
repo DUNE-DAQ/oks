@@ -12,6 +12,8 @@
 
 #include <boost/program_options.hpp>
 
+using namespace dunedaq::oks;
+
 int
 main(int argc, char **argv)
 {

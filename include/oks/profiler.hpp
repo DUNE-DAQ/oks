@@ -5,6 +5,9 @@
 
 #include "oks/defs.hpp"
 
+namespace dunedaq {
+namespace oks {
+
 class OksKernel;
 
 
@@ -90,4 +93,6 @@ private:
   std::chrono::time_point<std::chrono::steady_clock> p_start_time_point;
 };
 
+} // namespace oks
+} // namespace dunedaq
 #endif

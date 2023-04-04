@@ -23,10 +23,6 @@
 #include <unordered_set>
 #include <unordered_map>
 
-class OksXmlOutputStream;
-class OksXmlInputStream;
-class OksKernel;
-class OksFile;
 
 namespace boost
 {
@@ -36,8 +32,13 @@ namespace boost
   }
 }
 
-
+namespace dunedaq {
 namespace oks {
+
+class OksXmlOutputStream;
+class OksXmlInputStream;
+class OksKernel;
+class OksFile;
 
     /**
      *  \brief Cannot add include file.
@@ -268,7 +269,7 @@ namespace oks {
 
   class Comment {
 
-    friend class ::OksFile;
+    friend class OksFile;
 
     private:
 
@@ -325,7 +326,6 @@ namespace oks {
       return (__x == __y);
     }
   };
-}
 
 
   /**
@@ -805,4 +805,6 @@ class OksFile {
 std::ostream& operator<<(std::ostream&, const OksFile&);
 std::ostream& operator<<(std::ostream&, const oks::Comment&);
 
+} // namespace oks
+} // namespace dunedaq
 #endif

@@ -10,14 +10,15 @@
 #include <map>
 #include <string>
 
+namespace dunedaq {
+namespace oks {
+
 class OksClass;
 class OksObject;
 class OksXmlInputStream;
 class OksFile;
 struct OksAliasTable;
 class OksKernel;
-
-namespace oks {
 
     // read date and time strings from OKS files (oks::Date, oks::Time or Boost ISO strings)
 
@@ -104,6 +105,8 @@ namespace oks {
 
   std::ostream& operator<<(std::ostream&, const Time&);
 
-}
+
+} // namespace oks
+} // namespace dunedaq
 
 #endif

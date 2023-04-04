@@ -12,9 +12,10 @@
 #include "oks/exceptions.hpp"
 #include "oks/cstring.hpp"
 
-struct OksData;
-
+namespace dunedaq {
 namespace oks {
+
+  struct OksData;
 
   namespace xml {
 
@@ -103,7 +104,7 @@ namespace oks {
   };
 
   struct ReadFileParams;
-}
+
 
 
 class OksXmlOutputStream
@@ -510,5 +511,6 @@ OksXmlInputStream::get_first_non_empty()
     else return c;
   }
 }
-
+} // namespace oks
+} // namespace dunedaq
 #endif

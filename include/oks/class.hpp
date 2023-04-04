@@ -22,8 +22,8 @@
 
 #include <boost/pool/pool_alloc.hpp>
 
-
-
+namespace dunedaq {
+namespace oks {
 
   // Forward declarations
 
@@ -41,8 +41,6 @@ class OksXmlOutputStream;
 
 
   /// @addtogroup oks
-
-namespace oks {
 
     /** Cannot find super class */
 
@@ -173,8 +171,6 @@ namespace oks {
       static std::string fill(const std::string& what, const std::string& reason) noexcept;
 
   };
-
-}
 
 
   /**
@@ -1093,4 +1089,6 @@ OksClass::OksClass (const char * name, size_t len) :
   p_indices		  (0)
 { ; }
 
+} // namespace oks
+} // namespace dunedaq
 #endif

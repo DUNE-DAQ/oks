@@ -15,6 +15,9 @@
 
 #include "oks/defs.hpp"
 
+namespace dunedaq {
+namespace oks {
+
 class   OksXmlOutputStream;
 class   OksXmlInputStream;
 class   OksClass;
@@ -291,5 +294,7 @@ class OksMethod
 
 };
 
+} // namespace oks
+} // namespace dunedaq
 
 #endif

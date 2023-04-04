@@ -13,6 +13,9 @@
 #include <memory>
 #include <queue>
 
+namespace dunedaq {
+namespace oks {
+
 class OksJob
 {
   public:
@@ -80,4 +83,6 @@ class OksPipeline
     std::queue<OksJob*>		m_jobs;
 };
 
+} // namespace oks
+} // namespace dunedaq
 #endif
