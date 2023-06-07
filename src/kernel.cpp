@@ -779,11 +779,11 @@ OksKernel::OksKernel(bool sm, bool vm, bool tm, bool allow_repository, const cha
     const char * oks_db_root = getenv("OKS_DB_ROOT");
 
     if (oks_db_root == nullptr || *oks_db_root == 0)
-      oks_db_root = getenv("TDAQ_DB_PATH");
+      oks_db_root = getenv("DUNEDAQ_SHARE_PATH");
     else
       p_use_strict_repository_paths = false;
 
-    OSK_VERBOSE_REPORT("database root = \'" << oks_db_root << "\' (as defined by the OKS_DB_ROOT or TDAQ_DB_PATH)");
+    OSK_VERBOSE_REPORT("database root = \'" << oks_db_root << "\' (as defined by the OKS_DB_ROOT or DUNEDAQ_SHARE_PATH)");
 
 
       // if not defined, set oks_db_root to empty string (to avoid std::string constructor crash when string is 0) 
@@ -1709,7 +1709,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
 
               std::ostringstream text;
               text << fname << " file does not belong to oks git repository\n"
-                  "provide file repository name, or unset TDAQ_DB_REPOSITORY and try again with TDAQ_DB_PATH process environment variable";
+                  "provide file repository name, or unset TDAQ_DB_REPOSITORY and try again with the DUNEDAQ_SHARE_PATH environment variable";
               throw std::runtime_error(text.str().c_str());
             }
           else
@@ -1744,7 +1744,7 @@ OksKernel::get_file_path(const std::string& s, const OksFile * file_h, bool stri
     if (!is_absolute_path)
       for (auto & i : p_repository_dirs)
         {
-          TEST_PATH_TOKEN(i, s, "TDAQ_DB_PATH")
+          TEST_PATH_TOKEN(i, s, "DUNEDAQ_SHARE_PATH")
         }
 
     // check non-absolute path relative to parent file if any
