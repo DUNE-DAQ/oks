@@ -1,4 +1,4 @@
-**_JCF, Jan-18-2023: the documentation below this line is the original README.md contents of the oks repo from ATLAS. For the documentation of the OKS suite for DUNE DAQ, please go [here](https://github.com/DUNE-DAQ/dal/blob/develop/docs/README.md)_**
+**_JCF, Jul-15-2023: the documentation below this line is the original README.md contents of the oks repo from ATLAS. For the documentation of the OKS suite for DUNE DAQ, please go [here](https://dune-daq-sw.readthedocs.io/en/latest/packages/dal/)_**
 
 The OKS (Object Kernel Support) is a library to support a simple active persistent in-memory object manager. It is suitable for applications which need to create persistent structured information with fast access but do not require full database functionality. 
 
