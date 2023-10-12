@@ -27,6 +27,9 @@
 
 namespace dunedaq {
 namespace oks {
+  // Nasty hack to allow code generation on the fly without locking
+  // file. Off by default
+  bool OksFile::p_nolock_mode = false;
     //
     // Define XML formats used to store OKS schema and data files
     //
@@ -1008,6 +1011,12 @@ OksFile::get_lock_string(std::string& lock_file_contents) const
 void
 OksFile::lock()
 {
+  if (p_nolock_mode) {
+    // Nasty hack to allow code generation on the fly without locking
+    // file. Just return without locking!
+    return;
+  }
+
   init_lock_name();
 
   if (p_lock != nullptr)

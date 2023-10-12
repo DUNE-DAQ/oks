@@ -380,6 +380,11 @@ class OksFile {
 
     void lock();
 
+  // Nasty hack to allow code generation on the fly without locking
+  // file. Off by default
+  static void set_nolock_mode(bool nl) {p_nolock_mode = nl;}
+
+
 
       /**
        *   \brief Unlock OKS file.
@@ -729,6 +734,7 @@ class OksFile {
 
 
   private:
+  static bool p_nolock_mode; // Nasty hack mode
 
     std::string p_short_name;  // short path to file
     std::string p_full_name;   // path which is used to open file
