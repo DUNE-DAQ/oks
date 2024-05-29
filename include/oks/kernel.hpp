@@ -642,7 +642,7 @@ class OksKernel
 
 
     /*   /\** */
-    /*    *  \brief Validate user credentials (used by rdb and oksconfig). */
+    /*    *  \brief Validate user credentials (used by rdb and oksconflibs). */
     /*    * */
     /*    *  PAM authentication is used. */
     /*    * */

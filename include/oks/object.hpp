@@ -22,7 +22,7 @@
 #include <map>
 #include <functional>
 
-#include "oksdbinterfaces/map.hpp"
+#include "conffwk/map.hpp"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
@@ -345,7 +345,7 @@ struct OksDataInfo {
 
     /// Declare map of pointers to OksDataInfo (unsorted by name)
 
-  typedef oksdbinterfaces::map<OksDataInfo *> Map;
+  typedef conffwk::map<OksDataInfo *> Map;
 
 
     /// Constructors
