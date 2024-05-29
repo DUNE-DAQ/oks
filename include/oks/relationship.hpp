@@ -292,7 +292,7 @@ class OksRelationship
           ============   has   ===========
           \endcode
        *
-       *  Also, the genconfig package generates print() method of data access library
+       *  Also, the oksdalgen package generates print() method of data access library
        *  in a different way depending on the composite relationship state:
        *  - objects referenced via non-composite relationship are printed as references from parent object
        *  - objects referenced via composite relationship are printed with details as part of  parent object

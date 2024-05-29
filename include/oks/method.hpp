@@ -28,7 +28,7 @@ class   OksMethod;
   /**
    *  	An OKS method may have implementations on different languages (e.g. "c++", "java", etc.).
    *  	Implementations linked with a method shall have different languages.
-   *  	The method implementations are used by genconfig package generating DAL.
+   *  	The method implementations are used by oksdalgen package generating DAL.
    */
 
 class OksMethodImplementation
@@ -146,7 +146,7 @@ class OksMethodImplementation
    *    This allows to insert user-defined methods (also known as "DAL algorithms")
    *    into generated DAL classes. In such case the method should have
    *    appropriate implementations for c++ and/or Java languages.
-   *    For more information on DAL generation see genconfig User's Guide.
+   *    For more information on DAL generation see oksdalgen User's Guide.
    */
 
 class OksMethod
