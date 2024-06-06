@@ -30,8 +30,6 @@
 
 //#include <daq_tokens/verify.h>
 
-#include "conffwk/map.hpp"
-
 #include "oks/kernel.hpp"
 #include "oks/xml.hpp"
 #include "oks/file.hpp"
@@ -1201,7 +1199,7 @@ OksKernel::OksKernel(const OksKernel& src, bool copy_repository) :
         src_o->p_user_data,
         src_o->p_int32_id,
         src_o->p_duplicated_object_id_idx,
-	(*p_data_files.find(&src_o->file->p_full_name)).second
+        (*p_data_files.find(&src_o->file->p_full_name)).second
       );
 
       o_table[idx] = o;
@@ -1212,60 +1210,60 @@ OksKernel::OksKernel(const OksKernel& src, bool copy_repository) :
         const OksData * src_data = src_o->data;
         OksData * dst_data = o->data;
 
-	std::list<OksAttribute *>::const_iterator ia_dst = c->all_attributes()->begin();
-	std::list<OksAttribute *>::const_iterator ia_src = src_o->uid.class_id->all_attributes()->begin();
+        std::list<OksAttribute *>::const_iterator ia_dst = c->all_attributes()->begin();
+        std::list<OksAttribute *>::const_iterator ia_src = src_o->uid.class_id->all_attributes()->begin();
 
         for(size_t j = 0; j < num_of_attrs; ++j) {
           *dst_data = *src_data;
 
-	  OksAttribute * a_dst(*ia_dst);
-	  
-	    // process in a special way CLASS type (reference on class)
-	  
-	  if(a_dst->get_data_type() == OksData::class_type) {
-	    if(a_dst->get_is_multi_values() == false) {
-	      dst_data->data.CLASS = c_table[src_data->data.CLASS->p_id];
-	    }
-	    else {
-	      OksData::List::iterator li_dst = dst_data->data.LIST->begin();
-	      OksData::List::iterator li_src = src_data->data.LIST->begin();
+          OksAttribute * a_dst(*ia_dst);
+          
+            // process in a special way CLASS type (reference on class)
+          
+          if(a_dst->get_data_type() == OksData::class_type) {
+            if(a_dst->get_is_multi_values() == false) {
+              dst_data->data.CLASS = c_table[src_data->data.CLASS->p_id];
+            }
+            else {
+              OksData::List::iterator li_dst = dst_data->data.LIST->begin();
+              OksData::List::iterator li_src = src_data->data.LIST->begin();
 
-	      while(li_dst != dst_data->data.LIST->end()) {
-	        (*li_dst)->data.CLASS = c_table[(*li_src)->data.CLASS->p_id];
-	        ++li_dst;
-	        ++li_src;
-	      }
-	    }
-	  }
+              while(li_dst != dst_data->data.LIST->end()) {
+                (*li_dst)->data.CLASS = c_table[(*li_src)->data.CLASS->p_id];
+                ++li_dst;
+                ++li_src;
+              }
+            }
+          }
 
-	    // process in a special way ENUM type (reference on attribute's data)
+            // process in a special way ENUM type (reference on attribute's data)
 
-	  else if(a_dst->get_data_type() == OksData::enum_type) {
-	    OksAttribute * a_src(*ia_src);
-	    const std::string * p_enumerators_first(&((*(a_src->p_enumerators))[0]));
+          else if(a_dst->get_data_type() == OksData::enum_type) {
+            OksAttribute * a_src(*ia_src);
+            const std::string * p_enumerators_first(&((*(a_src->p_enumerators))[0]));
 
-	    if(a_dst->get_is_multi_values() == false) {
-	      unsigned long dx = src_data->data.ENUMERATION - p_enumerators_first;
-	      dst_data->data.ENUMERATION = &((*(a_dst->p_enumerators))[dx]);
-	    }
-	    else {
-	      OksData::List::iterator li_dst = dst_data->data.LIST->begin();
-	      OksData::List::iterator li_src = src_data->data.LIST->begin();
+            if(a_dst->get_is_multi_values() == false) {
+              unsigned long dx = src_data->data.ENUMERATION - p_enumerators_first;
+              dst_data->data.ENUMERATION = &((*(a_dst->p_enumerators))[dx]);
+            }
+            else {
+              OksData::List::iterator li_dst = dst_data->data.LIST->begin();
+              OksData::List::iterator li_src = src_data->data.LIST->begin();
 
-	      while(li_dst != dst_data->data.LIST->end()) {
-	        unsigned long dx = (*li_src)->data.ENUMERATION - p_enumerators_first;
-	        (*li_dst)->data.ENUMERATION = &((*(a_dst->p_enumerators))[dx]);
-	        ++li_dst;
-	        ++li_src;
-	      }
-	    }
-	  }
+              while(li_dst != dst_data->data.LIST->end()) {
+                unsigned long dx = (*li_src)->data.ENUMERATION - p_enumerators_first;
+                (*li_dst)->data.ENUMERATION = &((*(a_dst->p_enumerators))[dx]);
+                ++li_dst;
+                ++li_src;
+              }
+            }
+          }
 
           src_data++;
           dst_data++;
 
-	  ia_dst++;
-	  ia_src++;
+          ia_dst++;
+          ia_src++;
         }
       }
     }
@@ -1318,12 +1316,12 @@ OksKernel::OksKernel(const OksKernel& src, bool copy_repository) :
               break;
 
             case OksData::object_type:
-	      if(const OksObject * o2 = src_data->data.OBJECT) {
+              if(const OksObject * o2 = src_data->data.OBJECT) {
                 dst_data->data.OBJECT = o_table[reinterpret_cast<unsigned long>(o2->p_user_data)];
-	      }
-	      else {
+              }
+              else {
                 dst_data->data.OBJECT = 0;
-	      }
+              }
               break;
 
             case OksData::uid_type:
@@ -1619,11 +1617,11 @@ test_file_existence(const std::string& file_name, bool silence, const std::strin
     if(!f) {
       if(!silence) {
         if(file_exists) {
-	  throw std::runtime_error("cannot open file in write mode");
-	}
+          throw std::runtime_error("cannot open file in write mode");
+        }
         else {
-	  throw std::runtime_error("cannot create file");
-	}
+          throw std::runtime_error("cannot create file");
+        }
       }
     }
   }
@@ -1988,11 +1986,11 @@ OksKernel::k_close_dangling_includes()
       }
       else {
         it = p_schema_files.find(&f);
-	
+        
         if(it != p_schema_files.end()) {
           igraph[i->second].insert(it->second);
         }
-	else {
+        else {
           std::cerr << "cannot find file " << *x << " included by " << i->second->get_full_file_name() << std::endl;
         }
       }
@@ -2019,10 +2017,10 @@ OksKernel::k_close_dangling_includes()
             // check, the parent is valid
 
           if(igraph.find(p) != igraph.end()) {
-	    OksFile::IMap::iterator j = igraph.find(p);
+            OksFile::IMap::iterator j = igraph.find(p);
             if(test_parent(i->second, j)) {
-	      continue;
-	    }
+              continue;
+            }
           }
 
           TLOG_DEBUG( 1 ) << "the parent of file " << i->second->get_full_file_name() << " is not valid" ;
@@ -2032,9 +2030,9 @@ OksKernel::k_close_dangling_includes()
 
           for(OksFile::IMap::iterator j = igraph.begin(); j != igraph.end(); ++j) {
             if(test_parent(i->second, j)) {
-	      found_parent = true;
-	      break;
-	    }
+              found_parent = true;
+              break;
+            }
           }
 
           if(found_parent == false) {
@@ -2136,15 +2134,15 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
 
       for(std::list<std::string>::iterator i = fp->p_list_of_include_files.begin(); i != fp->p_list_of_include_files.end(); ++i) {
         std::set<std::string>::const_iterator x = included.find(*i);
-	if(x != included.end()) {
-	  TLOG_DEBUG(3) << "include \'" << *i << "\' already exists, skip...";
-	}
-	else {
-	  TLOG_DEBUG(3) << "the file \'" << *i << "\' was not previously included by \'" << fp->get_full_file_name() << '\'';
+        if(x != included.end()) {
+          TLOG_DEBUG(3) << "include \'" << *i << "\' already exists, skip...";
+        }
+        else {
+          TLOG_DEBUG(3) << "the file \'" << *i << "\' was not previously included by \'" << fp->get_full_file_name() << '\'';
 
-	  found_include_changes = true;
+          found_include_changes = true;
 
-	  std::string full_file_name;
+          std::string full_file_name;
 
           try {
             full_file_name = get_file_path(*i, fp);
@@ -2155,58 +2153,58 @@ OksKernel::k_preload_includes(OksFile * fp, std::set<OksFile *>& new_files_h, bo
 
           OksFile::Map::const_iterator j = p_schema_files.find(&full_file_name);
           if(j != p_schema_files.end()) {
-	    TLOG_DEBUG(3) << "the include \'" << *i << "\' is already loaded schema file \'" << j->first << '\'';
-	    continue;
-	  }
+            TLOG_DEBUG(3) << "the include \'" << *i << "\' is already loaded schema file \'" << j->first << '\'';
+            continue;
+          }
 
           j = p_data_files.find(&full_file_name);
           if(j != p_data_files.end()) {
-	    TLOG_DEBUG(3) << "the include \'" << *i << "\' is already loaded data file \'" << j->first << '\'';
-	    continue;
-	  }
+            TLOG_DEBUG(3) << "the include \'" << *i << "\' is already loaded data file \'" << j->first << '\'';
+            continue;
+          }
 
           if(OksFile * f = create_file_info(*i, full_file_name)) {
             if(f->p_oks_format == "schema") {
-	      std::string new_schema_full_file_name = f->get_full_file_name();
-	      delete f;
-	      if(p_schema_files.find(&new_schema_full_file_name) != p_schema_files.end()) {
-	        TLOG_DEBUG(3) << "the include \'" << *i << "\' is a schema file, that was already loaded";
-		continue;
-	      }
-	      else {
-	        if(allow_schema_extension) {
-	          TLOG_DEBUG(3) << "the include \'" << *i << "\' is new schema file, loading...";
-	          k_load_schema(*i, fp);
-	          continue;
-		}
-		else {
-	          std::ostringstream text;
-		  text << "k_preload_includes(): include of new schema file (\'" << *i << "\') is not allowed on data reload";
-		  throw std::runtime_error(text.str().c_str());
-		}
-	      }
-	    }
+              std::string new_schema_full_file_name = f->get_full_file_name();
+              delete f;
+              if(p_schema_files.find(&new_schema_full_file_name) != p_schema_files.end()) {
+                TLOG_DEBUG(3) << "the include \'" << *i << "\' is a schema file, that was already loaded";
+                continue;
+              }
+              else {
+                if(allow_schema_extension) {
+                  TLOG_DEBUG(3) << "the include \'" << *i << "\' is new schema file, loading...";
+                  k_load_schema(*i, fp);
+                  continue;
+                }
+                else {
+                  std::ostringstream text;
+                  text << "k_preload_includes(): include of new schema file (\'" << *i << "\') is not allowed on data reload";
+                  throw std::runtime_error(text.str().c_str());
+                }
+              }
+            }
             else if(f->p_oks_format == "data" || f->p_oks_format == "extended" || f->p_oks_format == "compact") {
-	      TLOG_DEBUG(3) << "the include \'" << *i << "\' is new data file, pre-loading...";
+              TLOG_DEBUG(3) << "the include \'" << *i << "\' is new data file, pre-loading...";
               add_data_file(f);
-	      p_preload_added_files.push_back(f);
-	      new_files_h.insert(f);
-	      f->p_list_of_include_files.clear();
-	      if(k_preload_includes(f, new_files_h, allow_schema_extension)) found_include_changes = true;
+              p_preload_added_files.push_back(f);
+              new_files_h.insert(f);
+              f->p_list_of_include_files.clear();
+              if(k_preload_includes(f, new_files_h, allow_schema_extension)) found_include_changes = true;
               f->p_included_by = fp;
               f->update_status_of_file();
-	    }
+            }
             else {
               delete f;
-	      std::ostringstream text;
-	      text << "k_preload_includes(): failed to parse header of included \'" << full_file_name << "\' file";
+              std::ostringstream text;
+              text << "k_preload_includes(): failed to parse header of included \'" << full_file_name << "\' file";
               throw std::runtime_error(text.str().c_str());
             }
           }
           else {
             throw std::runtime_error("k_load_file(): cannot open file");
           }
-	}
+        }
       }
     }
   }
@@ -2399,7 +2397,7 @@ OksKernel::k_load_schema(OksFile * fp, std::shared_ptr<OksXmlInputStream> xmls, 
       OksClass *c = 0;
 
       try {
-	c = new OksClass(*xmls, this);
+        c = new OksClass(*xmls, this);
       }
       catch(EndOfXmlStream &) {
         delete c;
@@ -3135,14 +3133,14 @@ struct OksLoadObjectsJob : public OksJob
           }
         }
         catch(FailedCreateObject & ex) {
-	  m_kernel->p_load_errors.add_error(*m_fp, ex);
-	  return;
+          m_kernel->p_load_errors.add_error(*m_fp, ex);
+          return;
         }
 
         m_fp->p_size = m_xmls->get_position();
       }
       catch (std::exception& ex) {
-	m_kernel->p_load_errors.add_error(*m_fp, ex);
+        m_kernel->p_load_errors.add_error(*m_fp, ex);
       }
     }
 
@@ -3177,23 +3175,23 @@ static bool _find_file(const OksFile::Map & files, const OksFile * f)
 void
 ReloadObjects::put(OksObject * o)
 {
-  conffwk::map<OksObject *> *& c = data[o->uid.class_id];
-  if(!c) c = new conffwk::map<OksObject *>();
+  map_str_t<OksObject *> *& c = data[o->uid.class_id];
+  if(!c) c = new map_str_t<OksObject *>();
   (*c)[o->GetId()] = o;
 }
 
 OksObject *
 ReloadObjects::pop(const OksClass* c, const std::string& id)
 {
-  std::map< const OksClass *, conffwk::map<OksObject *> * >::iterator i = data.find(c);
+  std::map< const OksClass *, map_str_t<OksObject *> * >::iterator i = data.find(c);
   if(i != data.end()) {
-    conffwk::map<OksObject *>::iterator j = i->second->find(id);
+    map_str_t<OksObject *>::iterator j = i->second->find(id);
     if(j != i->second->end()) {
       OksObject * o = j->second;
       i->second->erase(j);
       if(i->second->empty()) {
         delete i->second;
-	data.erase(i);
+        data.erase(i);
       }
       return o;
     }
@@ -3204,7 +3202,7 @@ ReloadObjects::pop(const OksClass* c, const std::string& id)
 
 ReloadObjects::~ReloadObjects()
 {
-  for(std::map< const OksClass *, conffwk::map<OksObject *> * >::iterator i = data.begin(); i != data.end(); ++i) {
+  for(std::map< const OksClass *, map_str_t<OksObject *> * >::iterator i = data.begin(); i != data.end(); ++i) {
     delete i->second;
   }
 }
@@ -3315,7 +3313,7 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
           if(files_to_be_closed.find(j->second) == files_to_be_closed.end()) {
             for(std::list<std::string>::iterator l = j->second->p_list_of_include_files.begin(); l != j->second->p_list_of_include_files.end(); ++l) {
               try {
-	        good_files[get_file_path(*l, j->second)] = j->second;
+                good_files[get_file_path(*l, j->second)] = j->second;
               }
               catch (...) {
               }
@@ -3336,16 +3334,16 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
 
             std::map<std::string, OksFile *>::const_iterator j = good_files.find(s);
 
-	    if(j != good_files.end()) {
-	      f2->p_included_by = j->second;
-	    }
+            if(j != good_files.end()) {
+              f2->p_included_by = j->second;
+            }
             else {
               files_to_be_closed.insert(f2);
 
               for(OksObject::Set::const_iterator oi = p_objects.begin(); oi != p_objects.end(); ++oi) {
                 if((*oi)->file == f2) {
-		  reload_objects.put(*oi); 
-	        }
+                  reload_objects.put(*oi); 
+                }
               }
 
               if (files_h.erase(f2)) {
@@ -3360,12 +3358,12 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
           }
         }
 
-	if(num_of_closing_files == files_to_be_closed.size()) {
-	  break;
-	}
-	else {
-	  num_of_closing_files = files_to_be_closed.size();
-	}
+        if(num_of_closing_files == files_to_be_closed.size()) {
+          break;
+        }
+        else {
+          num_of_closing_files = files_to_be_closed.size();
+        }
       }
     }
     else {
@@ -3375,12 +3373,12 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
       // remove exclusive RCRs (will be restored when read, if object was not changed)
 
     {
-      for(std::map< const OksClass *, conffwk::map<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
+      for(std::map< const OksClass *, map_str_t<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
         const OksClass * c(cx->first);
-	if(c->p_all_relationships && !c->p_all_relationships->empty()) {
-	  const unsigned int atts_num(c->number_of_all_attributes());
-	  for(conffwk::map<OksObject *>::const_iterator j = cx->second->begin(); j != cx->second->end(); ++j) {
-	    OksObject * obj = j->second;
+        if(c->p_all_relationships && !c->p_all_relationships->empty()) {
+          const unsigned int atts_num(c->number_of_all_attributes());
+          for(map_str_t<OksObject *>::const_iterator j = cx->second->begin(); j != cx->second->end(); ++j) {
+            OksObject * obj = j->second;
             OksData * d(obj->data + atts_num);
 
             for(std::list<OksRelationship *>::iterator i = c->p_all_relationships->begin(); i != c->p_all_relationships->end(); ++i, ++d) {
@@ -3401,10 +3399,10 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
                     }
                   }
                 }
-	      }
+              }
             }	    
-	  }
-	}
+          }
+        }
       }
     }
 
@@ -3454,19 +3452,19 @@ OksKernel::reload_data(std::set<OksFile *>& files_h, bool allow_schema_extension
     OksObject::FSet oset;
 
     {
-      for(std::map< const OksClass *, conffwk::map<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
-        for(conffwk::map<OksObject *>::const_iterator ox = cx->second->begin(); ox != cx->second->end(); ++ox) {
-	  oset.insert(ox->second);
-	}
+      for(std::map< const OksClass *, map_str_t<OksObject *> * >::const_iterator cx = reload_objects.data.begin(); cx != reload_objects.data.end(); ++cx) {
+        for(map_str_t<OksObject *>::const_iterator ox = cx->second->begin(); ox != cx->second->end(); ++ox) {
+          oset.insert(ox->second);
+        }
       }
 
 #ifndef ERS_NO_DEBUG
       if(ers::debug_level() >= 3) {
         std::ostringstream text;
-	text << "there are " << oset.size() << " removed objects:\n";
+        text << "there are " << oset.size() << " removed objects:\n";
 
         for(OksObject::FSet::iterator x = oset.begin(); x != oset.end(); ++x) {
-	  text << " - object " << *x << std::endl;
+          text << " - object " << *x << std::endl;
           TLOG_DEBUG(3) << text.str();
         }
       }
@@ -3878,7 +3876,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
 
         if(!errors.empty()) {
           std::ostringstream text;
-	  text << "the file contains objects with dangling references:\n" << errors;
+          text << "the file contains objects with dangling references:\n" << errors;
           throw std::runtime_error(text.str().c_str());
         }
       }
@@ -3896,7 +3894,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
       for(OksObject::Set::iterator i = p_objects.begin(); i != p_objects.end(); ++i) {
         if((*i)->file == fh) {
           numberOfObjects++;
-	  if(!ignoreBadObjects || !p_silence) {
+          if(!ignoreBadObjects || !p_silence) {
             if((*i)->is_consistent(includes, "WARNING") == false) {
               found_bad_object = true;
             }
@@ -3911,7 +3909,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
       }
 
       if(found_bad_object && ignoreBadObjects == false) {
-	throw std::runtime_error("the file contains inconsistent/duplicated objects or misses includes");
+        throw std::runtime_error("the file contains inconsistent/duplicated objects or misses includes");
       }
     }
 
@@ -3937,7 +3935,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
         std::fstream f2(pf->p_full_name.c_str(), std::ios::out);
 
         if(!f2) {
-	  std::ostringstream text;
+          std::ostringstream text;
           text << "cannot open file \'" << pf->p_full_name << "\' for writing";
           throw std::runtime_error(text.str().c_str());
         }
@@ -3961,7 +3959,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
       }
       else {
         if(!p_silence) {
-	  std::lock_guard lock(p_parallel_out_mutex);
+          std::lock_guard lock(p_parallel_out_mutex);
           std::cout << "Saving " << numberOfObjects << " objects " << (force_defaults ? "with enforced default values " : "") << "to data file \"" << pf->p_full_name << "\"...\n";
         }
       }
@@ -3982,13 +3980,13 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
 
           for(OksObject::Map::const_iterator j = i->second->p_objects->begin(); j != i->second->p_objects->end(); ++j) {
             if(j->second->file == fh || (objects && (objects->find(j->second) != objects->end()))) {
-	      sorted[j->first] = j->second;
-	    }
-	  }
+              sorted[j->first] = j->second;
+            }
+          }
 
           for(OksObject::SMap::iterator j = sorted.begin(); j != sorted.end(); ++j) {
-	    j->second->put(xmls, force_defaults);
-	    xmls.put_raw('\n');
+            j->second->put(xmls, force_defaults);
+            xmls.put_raw('\n');
           }
         }
       }
@@ -4001,7 +3999,7 @@ OksKernel::k_save_data(OksFile * pf, bool ignoreBadObjects, OksFile * fh, const 
 
 
         // check that the written file is OK
-	// FIXME: can be removed later, if exceptions work well enough
+        // FIXME: can be removed later, if exceptions work well enough
 
     {
       long written_len = 0;
@@ -4265,7 +4263,7 @@ OksKernel::close_all_data()
       for(OksClass::Map::const_iterator i = p_classes.begin(); i != p_classes.end(); ++i) {
         if(i->second->p_objects) {
           delete i->second->p_objects;
-	  i->second->p_objects = 0;
+          i->second->p_objects = 0;
         }
       }
     }
@@ -4380,15 +4378,15 @@ OksKernel::k_bind_objects()
       }
       catch(ObjectBindError& ex) {
         if(ex.p_is_error) {
-	  throw;
-	}
-	else {
-	  const std::string error_text(strchr(ex.what(), '\n')+1);
+          throw;
+        }
+        else {
+          const std::string error_text(strchr(ex.what(), '\n')+1);
           if(!p_bind_objects_status.empty()) p_bind_objects_status.push_back('\n');
             p_bind_objects_status.append(error_text);
 
-	    TLOG_DEBUG(1) << error_text;
-	}
+            TLOG_DEBUG(1) << error_text;
+        }
       }
     }
   }
@@ -4432,10 +4430,10 @@ OksKernel::unbind_all_rels(const OksObject::FSet& rm_objs, OksObject::FSet& upda
               OksData * lid(*li);
               if(lid->type == OksData::object_type) {
                 if(rm_objs.find(lid->data.OBJECT) != rm_objs.end()) {
-		  updated.insert(o);
+                  updated.insert(o);
                   const OksClass * __c(lid->data.OBJECT->GetClass());
                   const OksString& __id(lid->data.OBJECT->GetId());
-		  lid->Set(__c,__id);
+                  lid->Set(__c,__id);
                   TLOG_DEBUG(5) << "set relationship of " << o << ": " << *d;
                 }
               }
@@ -4526,8 +4524,8 @@ OksKernel::registrate_all_classes(bool skip_registered)
       OksClass * c(i->second);
       if(const OksClass::FList * scl = c->p_all_super_classes) {
         for(OksClass::FList::const_iterator j = scl->begin(); j != scl->end(); ++j) {
-	  (*j)->p_all_sub_classes->push_back(c);
-	}
+          (*j)->p_all_sub_classes->push_back(c);
+        }
       }
     }
 
@@ -4536,18 +4534,18 @@ OksKernel::registrate_all_classes(bool skip_registered)
         OksClass *c(i->second);
         if(!c->get_is_abstract()) {
           if(const OksClass::FList * spc = c->all_super_classes()) {
-	    if(!spc->empty()) {
+            if(!spc->empty()) {
               wmemset(reinterpret_cast<wchar_t *>(table), 0, array_size);  // [re-]set table by NULLs
               for(OksClass::FList::const_iterator j1 = spc->begin(); j1 != spc->end(); ++j1) {
-	        if(const OksClass::FList * sbc = (*j1)->all_sub_classes()) {
-	          for(OksClass::FList::const_iterator j2 = sbc->begin(); j2 != sbc->end(); ++j2) {
+                if(const OksClass::FList * sbc = (*j1)->all_sub_classes()) {
+                  for(OksClass::FList::const_iterator j2 = sbc->begin(); j2 != sbc->end(); ++j2) {
                     OksClass *c2(*j2);
                     if((c2 != c) && !c2->get_is_abstract()) {
                       table[c2->p_id] = c2;
                     }
-	          }
-	        }
-	      }
+                  }
+                }
+              }
               
               unsigned int count(0);
               for(unsigned int x = 0; x < num_of_classes; ++x) {
@@ -4570,9 +4568,9 @@ OksKernel::registrate_all_classes(bool skip_registered)
                   if(table[x]) cih->push_back(table[x]);
                 }
               }
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
 
 #ifndef ERS_NO_DEBUG
@@ -4581,20 +4579,20 @@ OksKernel::registrate_all_classes(bool skip_registered)
 
         for(i = p_classes.begin(); i != p_classes.end(); ++i) {
           if(std::vector<OksClass *> * cis = i->second->p_inheritance_hierarchy) {
-	    s << " - class \'" << i->second->get_name() << "\' shares IDs with " << cis->size() << " classes: ";
-	    OksClass::Set sorted;
-	    for(std::vector<OksClass *>::const_iterator j = cis->begin(); j != cis->end(); ++j) {
+            s << " - class \'" << i->second->get_name() << "\' shares IDs with " << cis->size() << " classes: ";
+            OksClass::Set sorted;
+            for(std::vector<OksClass *>::const_iterator j = cis->begin(); j != cis->end(); ++j) {
               sorted.insert(*j);
-	    }
-	    for(OksClass::Set::const_iterator j = sorted.begin(); j != sorted.end(); ++j) {
+            }
+            for(OksClass::Set::const_iterator j = sorted.begin(); j != sorted.end(); ++j) {
               if(j != sorted.begin()) s << ", ";
-	      s << '\'' << (*j)->get_name() << '\'';
-	    }
-	    s << std::endl;
+              s << '\'' << (*j)->get_name() << '\'';
+            }
+            s << std::endl;
           }
-	}
+        }
 
-	TLOG_DEBUG(2) << "Schema inheritance hierarchy used to test objects with equal IDs:\n" << s.str();
+        TLOG_DEBUG(2) << "Schema inheritance hierarchy used to test objects with equal IDs:\n" << s.str();
       }
 #endif
     }
@@ -4649,7 +4647,7 @@ OksKernel::is_dangling(OksClass *c) const
       for(OksClass::Map::const_iterator i = p_classes.begin(); i != p_classes.end(); ++i) {
         if(i->second == c) {
           not_found = false;
-	  break;
+          break;
         }
       }
     }

@@ -22,8 +22,6 @@
 #include <map>
 #include <functional>
 
-#include "conffwk/map.hpp"
-
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/pool/pool_alloc.hpp>
@@ -345,7 +343,7 @@ struct OksDataInfo {
 
     /// Declare map of pointers to OksDataInfo (unsorted by name)
 
-  typedef conffwk::map<OksDataInfo *> Map;
+  typedef std::map<std::string, OksDataInfo *> Map;
 
 
     /// Constructors
