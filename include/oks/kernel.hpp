@@ -582,7 +582,9 @@ class OksKernel
   friend struct OksLoadObjectsJob;
   friend struct OksData;
 
-
+  template<typename T>
+  using map_str_t = std::map<std::string, T>;
+  
   public:
 
       /**
