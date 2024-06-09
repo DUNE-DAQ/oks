@@ -310,9 +310,9 @@ OksClass::compare_without_methods(const OksClass & c) const noexcept
   if(this == &c) return true;
 
   if(
-	(p_name != c.p_name) ||
-	(p_description != c.p_description) ||
-	(p_abstract != c.p_abstract)
+        (p_name != c.p_name) ||
+        (p_description != c.p_description) ||
+        (p_abstract != c.p_abstract)
   ) return false;
   
   
@@ -388,8 +388,8 @@ operator<<(std::ostream& s, const OksClass& c)
   OSK_PROFILING(OksProfiler::ClassOperatorOut, c.p_kernel)
 
   s	<< "Class name: \"" << c.p_name << "\"\n"
-	   " has description: \"" << c.p_description << "\"\n"
-	<< (c.p_abstract == true ? " is abstract\n" : " is not abstract\n");
+           " has description: \"" << c.p_description << "\"\n"
+        << (c.p_abstract == true ? " is abstract\n" : " is not abstract\n");
 
   if(c.p_super_classes) {
     s << "The class has superclasses:\n";
@@ -540,7 +540,7 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
       if(strcmp(tag_start, class_xml_tag)) {
         if(!strcmp(tag_start, "/oks-schema")) {
           goto end_of_stream; // re-throw of exception takes too much time; go to is better
-	}
+        }
         s.throw_unexpected_tag(tag_start, class_xml_tag);
       }
     }
@@ -608,8 +608,8 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
         try {
           OksXmlAttribute attr(s);
 
-	  if(!p_super_classes) p_super_classes = new std::list<std::string *>();
-	  std::string * scl = new std::string(attr.value(), attr.value_len());
+          if(!p_super_classes) p_super_classes = new std::list<std::string *>();
+          std::string * scl = new std::string(attr.value(), attr.value_len());
           if(has_direct_super_class(*scl))
             {
               std::ostringstream text;
@@ -617,7 +617,7 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
               delete scl;
               throw std::runtime_error(text.str().c_str());
             }
-	  p_super_classes->push_back(scl);
+          p_super_classes->push_back(scl);
 
           OksXmlAttribute attr2(s);
         }
@@ -635,16 +635,16 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
       else if(oks::cmp_str9(tag_start, "attribute")) {
         unsigned long attr_pos = s.get_line_no();
         try {
-	  if(!p_attributes) p_attributes = new std::list<OksAttribute *>();
-	  OksAttribute * a = new OksAttribute(s, this);
-	  if(find_direct_attribute(a->get_name()) != nullptr)
-	    {
-	      std::ostringstream text;
-	      text << "redefinition of attribute with name \"" + a->get_name() + "\" at line " << attr_pos;
+          if(!p_attributes) p_attributes = new std::list<OksAttribute *>();
+          OksAttribute * a = new OksAttribute(s, this);
+          if(find_direct_attribute(a->get_name()) != nullptr)
+            {
+              std::ostringstream text;
+              text << "redefinition of attribute with name \"" + a->get_name() + "\" at line " << attr_pos;
               delete a;
-	      throw std::runtime_error(text.str().c_str());
-	    }
-	  p_attributes->push_back(a);
+              throw std::runtime_error(text.str().c_str());
+            }
+          p_attributes->push_back(a);
         }
         catch (oks::exception & e) {
           throw oks::FailedRead(std::string("an attribute of class \"") + p_name + '\"', e);
@@ -669,7 +669,7 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
               delete r;
               throw std::runtime_error(text.str().c_str());
             }
-	  p_relationships->push_back(r);
+          p_relationships->push_back(r);
         }
         catch (oks::exception & e) {
           throw oks::FailedRead(std::string("a relationship of class \"") + p_name + '\"', e);
@@ -685,8 +685,8 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
       else if(oks::cmp_str6(tag_start, "method")) {
         unsigned long method_pos = s.get_line_no();
         try {
-	  if(!p_methods) p_methods = new std::list<OksMethod *>();
-	  OksMethod * m = new OksMethod(s,this);
+          if(!p_methods) p_methods = new std::list<OksMethod *>();
+          OksMethod * m = new OksMethod(s,this);
           if(find_direct_method(m->get_name()) != nullptr)
             {
               std::ostringstream text;
@@ -694,7 +694,7 @@ OksClass::OksClass(OksXmlInputStream& s, OksKernel * k) :
               delete m;
               throw std::runtime_error(text.str().c_str());
             }
-	  p_methods->push_back(m);
+          p_methods->push_back(m);
         }
         catch (oks::exception & e) {
           throw oks::FailedRead(std::string("a method of class \"") + p_name + '\"', e);
@@ -832,7 +832,7 @@ check_and_report_empty_parameter(const char * fname, bool b1, bool b2)
 static void
 check_and_report_found_items(const char * fname, const char * item_type,
                              const std::string& item1_name, const std::string& item2_name,
-			     const std::string& class_name, bool b1, bool b2)
+                             const std::string& class_name, bool b1, bool b2)
 {
   struct {
     bool b;
@@ -1060,7 +1060,7 @@ OksClass::add(OksAttribute * attribute)
     if(find_direct_attribute(attribute->get_name()) != 0) {
       std::ostringstream text;
       text << "cannot add attribute \"" << attribute->get_name() << "\" to class \"" << p_name << "\"\n"
-	      "because the class already has attribute with this name.\n";
+              "because the class already has attribute with this name.\n";
       throw oks::SetOperationFailed(fname, text.str());
     }
   }
@@ -1129,7 +1129,7 @@ OksClass::remove(const OksAttribute *attribute)
   if(!p_attributes) {
     std::ostringstream text;
     text << "cannot remove attribute \"" << attribute->get_name() << "\" from class \"" << p_name << "\"\n"
-	    "because the class has no attributes.\n";
+            "because the class has no attributes.\n";
     throw oks::SetOperationFailed(fname, text.str());
   }
 
@@ -1216,7 +1216,7 @@ OksClass::add(OksRelationship * relationship)
     if(find_direct_relationship(relationship->get_name())) {
       std::ostringstream text;
       text << "cannot add relationship \"" << relationship->get_name() << "\" to class \"" << p_name << "\"\n"
-	      "because the class already has relationship with this name.\n";
+              "because the class already has relationship with this name.\n";
       throw oks::SetOperationFailed(fname, text.str());
     }
   }
@@ -1237,7 +1237,7 @@ OksClass::remove(const OksRelationship * relationship, bool call_delete)
   if(!p_relationships) {
     std::ostringstream text;
     text << "cannot remove relationship \"" << relationship->get_name() << "\" from class \"" << p_name << "\"\n"
-	    "because the class has no relationships.\n";
+            "because the class has no relationships.\n";
     throw oks::SetOperationFailed(fname, text.str());
   }
 
@@ -1362,7 +1362,7 @@ OksClass::add(OksMethod * method)
     if(find_direct_method(method->get_name())) {
       std::ostringstream text;
       text << "cannot add method \"" << method->get_name() << "\" to class \"" << p_name << "\"\n"
-	      "because the class already has method with this name.\n";
+              "because the class already has method with this name.\n";
       throw oks::SetOperationFailed(fname, text.str());
     }
   }
@@ -1385,7 +1385,7 @@ OksClass::remove(const OksMethod * method)
   if(!p_methods) {
     std::ostringstream text;
     text << "cannot remove method \"" << method->get_name() << "\" from class \"" << p_name << "\"\n"
-	    "because the class has no methods.\n";
+            "because the class has no methods.\n";
     throw oks::SetOperationFailed(fname, text.str());
   }
 
@@ -1477,10 +1477,10 @@ OksClass::number_of_objects() const noexcept
 }
 
 
-	//
-	// Creates list of class instances and instances of
-	// all subclasses
-	//
+        //
+        // Creates list of class instances and instances of
+        // all subclasses
+        //
 
 std::list<OksObject *> *
 OksClass::create_list_of_all_objects() const noexcept
@@ -1578,7 +1578,7 @@ OksClass::add_super_classes(FList * clist) const
     for(std::list<std::string *>::const_iterator i = p_super_classes->begin(); i != p_super_classes->end(); ++i) {
       if(OksClass * c = p_kernel->find_class(**i)) {
         c->add_super_classes(clist);
-	add_if_not_found(*clist, c);
+        add_if_not_found(*clist, c);
       }
       else {
         throw oks::CannotFindSuperClass(*this, **i);
@@ -1673,8 +1673,8 @@ OksClass::create_attributes()
           OksAttribute * a1 = find_direct_attribute(a->get_name());
           OksAttribute * a2 = find_attribute(a->get_name());
           if( a1 == 0 && a2 == 0 ) {
-	    p_all_attributes->push_back(a);
-	  }
+            p_all_attributes->push_back(a);
+          }
           else if( !p_kernel->p_silence ) {
             if(a1) {
               TLOG_DEBUG(1) << "in class \'" << get_name() << "\' direct attribute \'" << a1->get_name() <<
@@ -1746,11 +1746,11 @@ OksClass::create_relationships()
           OksRelationship * r1 = find_direct_relationship(r->get_name());
           OksRelationship * r2 = find_relationship(r->get_name());
 
-	  if(!r->p_class_type) { r->p_class_type = p_kernel->find_class(r->p_rclass); }
+          if(!r->p_class_type) { r->p_class_type = p_kernel->find_class(r->p_rclass); }
 
           if( r1 == 0 && r2 == 0) {
-	    p_all_relationships->push_back(r);
-	  }
+            p_all_relationships->push_back(r);
+          }
           else {
             if(r1) {
               TLOG_DEBUG(1) << "in class \'" << get_name() << "\' direct relationship \'" << r1->get_name() <<
@@ -1807,8 +1807,8 @@ OksClass::create_methods()
             find_direct_method((*i2)->get_name()) == 0 &&
             find_method((*i2)->get_name()) == 0
           ) {
-	    p_all_methods->push_back(*i2);
-	  }
+            p_all_methods->push_back(*i2);
+          }
         }
       }
     }
@@ -1847,12 +1847,12 @@ OksClass::registrate_attribute_change(OksAttribute *a)
           oldData->Clear();
           memcpy(static_cast<void *>(oldData), static_cast<void *>(&newData), sizeof(OksData));
           newData.Clear2(); // Do not free !
-	}
-	catch(oks::AttributeReadError & ex) {
-	  std::ostringstream text;
-	  text << "attribute \'" << a->get_name() << "\' change converting object " << o << ' ';
-	  throw oks::CannotRegisterClass(*this, text.str(), ex);
-	}
+        }
+        catch(oks::AttributeReadError & ex) {
+          std::ostringstream text;
+          text << "attribute \'" << a->get_name() << "\' change converting object " << o << ' ';
+          throw oks::CannotRegisterClass(*this, text.str(), ex);
+        }
       }
     }
   } while(p_all_sub_classes && i != p_all_sub_classes->end() && (c = *(i++)));
@@ -1898,15 +1898,15 @@ OksClass::registrate_instances()
 
   size_t dInfoLength = 0;
   bool thereAreChanges = false;
-		
+                
   if(!p_all_attributes->empty()) {
     for(std::list<OksAttribute *>::iterator i = p_all_attributes->begin(); i != p_all_attributes->end(); ++i) {
       OksAttribute *a = *i;
       if(!thereAreChanges) {
         OksDataInfo::Map::const_iterator x = p_data_info->find(a->get_name());
-	if( x == p_data_info->end() || x->second->attribute == nullptr || x->second->offset != dInfoLength || !(*(x->second->attribute) == *a) ) {
-	  thereAreChanges = true;
-	}
+        if( x == p_data_info->end() || x->second->attribute == nullptr || x->second->offset != dInfoLength || !(*(x->second->attribute) == *a) ) {
+          thereAreChanges = true;
+        }
       }
 
       (*dInfo)[a->get_name()] = new OksDataInfo(dInfoLength++, a);
@@ -1918,9 +1918,9 @@ OksClass::registrate_instances()
       OksRelationship *r = *i;
       if(!thereAreChanges) {
         OksDataInfo::Map::const_iterator x = p_data_info->find(r->get_name());
-	if( x == p_data_info->end() || x->second->relationship == nullptr || x->second->offset != dInfoLength || !(*(x->second->relationship) == *r) ) {
-	  thereAreChanges = true;
-	}
+        if( x == p_data_info->end() || x->second->relationship == nullptr || x->second->offset != dInfoLength || !(*(x->second->relationship) == *r) ) {
+          thereAreChanges = true;
+        }
       }
 
       (*dInfo)[r->get_name()] = new OksDataInfo(dInfoLength++, r);
@@ -1935,10 +1935,10 @@ OksClass::registrate_instances()
         size_t count = 0;
 
         if(!p_all_attributes->empty()) {
-      	  for(std::list<OksAttribute *>::iterator i2 = p_all_attributes->begin(); i2 != p_all_attributes->end(); ++i2) {
+                for(std::list<OksAttribute *>::iterator i2 = p_all_attributes->begin(); i2 != p_all_attributes->end(); ++i2) {
             OksAttribute * a = *i2;
-	  
-	    OksDataInfo::Map::const_iterator x = p_data_info->find(a->get_name());
+          
+            OksDataInfo::Map::const_iterator x = p_data_info->find(a->get_name());
 
             if(x != p_data_info->end() && x->second->attribute) {
               OksData *oldData(&o->data[x->second->offset]);
@@ -1948,19 +1948,19 @@ OksClass::registrate_instances()
                 oldData->type = OksData::unknown_type;
               }
               else {
-	        try {
+                try {
                   oldData->cvt(&data[count++], a);
                 }
-	        catch(oks::AttributeReadError & ex) {
-	          throw oks::AttributeConversionFailed(*a, o, ex);
-	        }
+                catch(oks::AttributeReadError & ex) {
+                  throw oks::AttributeConversionFailed(*a, o, ex);
+                }
               }
             }
-      	  }
+                }
         }
 
         if(!p_all_relationships->empty()) {
-      	  for(std::list<OksRelationship *>::iterator i2 = p_all_relationships->begin(); i2 != p_all_relationships->end(); ++i2) {
+                for(std::list<OksRelationship *>::iterator i2 = p_all_relationships->begin(); i2 != p_all_relationships->end(); ++i2) {
             OksRelationship *r = *i2;
 
             OksDataInfo::Map::const_iterator x = p_data_info->find(r->get_name());
@@ -1975,7 +1975,7 @@ OksClass::registrate_instances()
               else
                 oldData->ConvertTo(&data[count++], r);
             }
-      	  }
+                }
         }
 
         int n = p_instance_size;
@@ -1986,7 +1986,7 @@ OksClass::registrate_instances()
       }
     }
   }
-		
+                
   if(!p_data_info->empty()) {
     for(OksDataInfo::Map::iterator i = p_data_info->begin(); i != p_data_info->end(); ++i) {
       delete i->second;
@@ -1994,7 +1994,7 @@ OksClass::registrate_instances()
   }
 
   delete p_data_info;
-		
+                
   p_data_info = dInfo;
   p_instance_size = dInfoLength;
 }
@@ -2073,11 +2073,11 @@ OksClass::registrate_class_change(ChangeType changeType, const void *parameter, 
         case ChangeMethodsList:
           c->create_methods();
           break;
-			
+                        
         default:
           continue;
       }
-	
+        
       if(changeType != ChangeMethodsList) c->registrate_instances();
     } while(p_all_sub_classes && i != p_all_sub_classes->end() && (c = *(i++)));
 
@@ -2086,8 +2086,8 @@ OksClass::registrate_class_change(ChangeType changeType, const void *parameter, 
       if(!p_all_super_classes->empty())
         for(FList::iterator i2 = p_all_super_classes->begin(); i2 != p_all_super_classes->end(); ++i2)
           if(find(superclasses.begin(), superclasses.end(), *i2) == superclasses.end()) {
-	    superclasses.push_back(*i2);
-	  }
+            superclasses.push_back(*i2);
+          }
 
       for(FList::const_iterator i2 = superclasses.begin(); i2 != superclasses.end(); ++i2) {
         c = *i2;
@@ -2105,7 +2105,7 @@ OksClass::registrate_class_change(ChangeType changeType, const void *parameter, 
     if(OksClass::change_notify_fn) {
       if(p_all_sub_classes) i = p_all_sub_classes->begin();
       c = this;
-			
+                        
       do (*OksClass::change_notify_fn)(c, changeType, parameter);
       while(p_all_sub_classes && i != p_all_sub_classes->end() && (c = *(i++)));
     }
