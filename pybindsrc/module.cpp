@@ -56,7 +56,7 @@ PYBIND11_MODULE(_daq_oks_py, m)
       .def("number_of_objects",&OksKernel::number_of_objects)
       //
       // .def("find_class",&OksKernel::find_class)
-      .def("find_object",&OksKernel::find_object, py::return_value_policy::reference)
+      // .def("find_object",&OksKernel::find_object, py::return_value_policy::reference)
 
       // 
       .def("get_test_duplicated_objects_via_inheritance_mode", &OksKernel::get_test_duplicated_objects_via_inheritance_mode)
