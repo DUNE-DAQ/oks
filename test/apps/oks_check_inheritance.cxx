@@ -28,6 +28,8 @@ int main(int argc, char const *argv[])
 
     k.load_schema(file);
 
+    // Find classes with no superclasses.
+    // They are domain (or inheritance cluster) seeds
     std::deque<OksClass*> top_classes;
     for ( auto const& [key, kl] : k.classes()) {
         if (kl->direct_super_classes() == nullptr) {
@@ -35,45 +37,54 @@ int main(int argc, char const *argv[])
         }
     }
 
+    // TODO: remove 
     fmt::print("Initial cluster seeds\n");
     for( auto kl : top_classes ) {
         fmt::print("   {}\n", kl->get_name());
     }
 
+    // Build clusters
     std::deque<std::set<OksClass*>> clusters;
+
+    // Loop over seeds
     for( auto kl : top_classes ) {
-        
+      
+      // Make a candidate cluster based using the seed subclasses
       std::set<OksClass*> klass_cluster;
       klass_cluster.insert(kl);
       klass_cluster.insert(kl->all_sub_classes()->begin(), kl->all_sub_classes()->end());
       
+      // Look for overlaps with other domains
       std::deque<std::set<OksClass*>> overlaps;
       for( auto& cl : clusters ) {
         std::set<OksClass*> intersection;
         std::set_intersection(cl.begin(), cl.end(), klass_cluster.begin(), klass_cluster.end(),
           std::inserter(intersection, intersection.begin()));
+        // non-zero intersection, overlap found
         if (intersection.size() > 0) {
           overlaps.push_back(cl);
         }
-        
       }
 
-      if ( overlaps.size() == 0 ) {
-        clusters.push_back(klass_cluster);
-      } else {
-
+      // If overlaps are found, merge all overlapping domains
+      if ( overlaps.size() > 0 ) {
         for( auto& cl : overlaps ) {
+          // merge the existing cluster in klass_cluster
           klass_cluster.insert(cl.begin(), cl.end());
+          // Remove the old domain from the list
           auto it = std::find(clusters.begin(), clusters.end(), cl);
           if (it!= clusters.end()) {
               clusters.erase(it);
           }
         }
-
-        clusters.push_back(klass_cluster);
       }
+
+      clusters.push_back(klass_cluster);
+
     }
 
+
+    // Print the clustered domains
     fmt::print("Found {} inheritance clusters\n", clusters.size());
     for( size_t i(0); i<clusters.size(); ++i ) {
       auto& cl = clusters[i];
