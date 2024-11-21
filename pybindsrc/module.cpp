@@ -168,14 +168,17 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // // save_data
     // // backup_data
     // // save_as_data
-    // // save_all_sata
+    // save_all_data
+    .def("save_all_data", &OksKernel::save_all_data)
     // // close_data
-    // // close_all_data
-    // .def("close_all_data",&OksKernel::close_all_data)
+    // close_all_data
+    .def("close_all_data",&OksKernel::close_all_data)
 
     // // set_active_data
     // // get_active_daat
-    // // data_files
+    // data_files
+    .def("data_files",&OksKernel::data_files)
+
     // // create_list_of_updated_data_files
     // // get_modified_files
     // // get_repository_dirs
@@ -199,18 +202,28 @@ PYBIND11_MODULE(_daq_oks_py, m)
     .def("objects",&OksKernel::objects, py::return_value_policy::reference)
     // number_of_objects
     .def("number_of_objects",&OksKernel::number_of_objects) 
-    // // find_class
+    // find_class
+    .def("find_class",static_cast<OksClass*(OksKernel::*)(const std::string&) const>(&OksKernel::find_class), "class_name"_a) 
     // // get_all_classes
-    // // registrate_all_classes
-    // // is_dangling
+    // registrate_all_classes
+    .def("registrate_all_classes",&OksKernel::registrate_all_classes) 
+    // is_dangling
+    // Class
+    // .def("is_dangling",&OksKernel::is_dangling) 
+    // Object
+    // .def("is_dangling",&OksKernel::is_dangling) 
     // // subscribe_create_class
     // // subscribe_change_class
     // // subscribe_create_object
     // // subscribe_delete_object
-    // // bind_objects
-    // // get_bind_object_status
-    // // get_bind_classes_status
-    // // unset_repository_created
+    // bind_objects
+    .def("bind_objects",&OksKernel::bind_objects) 
+    // get_bind_objects_status
+    .def("get_bind_objects_status",&OksKernel::get_bind_objects_status) 
+    // get_bind_classes_status
+    .def("get_bind_classes_status",&OksKernel::get_bind_classes_status) 
+    // unset_repository_created
+    .def("unset_repository_created",&OksKernel::unset_repository_created) 
 
 
     // // GetVersion
