@@ -169,7 +169,7 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // // backup_data
     // // save_as_data
     // save_all_data
-    .def("save_all_data", &OksKernel::save_all_data)
+    .def("save_all_data", &OksKernel::save_all_data, "force_defaults"_a = false)
     // // close_data
     // close_all_data
     .def("close_all_data",&OksKernel::close_all_data)

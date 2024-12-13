@@ -25,6 +25,8 @@ daq_add_application(oks_clone_repository oks_clone_repository.cxx LINK_LIBRARIES
 daq_add_application(oks_validate_repository oks_validate_repository.cxx LINK_LIBRARIES oks Boost::program_options)
 
 
+
+daq_add_application(oks_save_all oks_save_all.cxx TEST LINK_LIBRARIES oks CLI11::CLI11 fmt::fmt)
 daq_add_application(oks_check_inheritance oks_check_inheritance.cxx TEST LINK_LIBRARIES oks CLI11::CLI11 fmt::fmt)
 
 

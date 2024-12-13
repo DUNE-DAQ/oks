@@ -4157,7 +4157,7 @@ OksKernel::save_as_data(const std::string& new_name, OksFile * pf)
 
 
 void
-OksKernel::save_all_data()
+OksKernel::save_all_data(bool force_defaults)
 {
   TLOG_DEBUG(4) << "enter";
 
@@ -4166,7 +4166,7 @@ OksKernel::save_all_data()
 
     for(OksFile::Map::iterator i = p_data_files.begin(); i != p_data_files.end(); ++i) {
       if(check_read_only(i->second) == false) {
-        k_save_data(i->second);
+        k_save_data(i->second, false, nullptr, nullptr, force_defaults);
       }
       else {
         TLOG_DEBUG(2) << "skip read-only data file \'" << *(i->first) << '\'';

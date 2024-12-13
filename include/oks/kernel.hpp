@@ -1410,7 +1410,7 @@ class OksKernel
        *  \throw Throw oks::exception in case of problems.
        */
 
-    void save_all_data();
+    void save_all_data(bool force_defaults=false);
 
 
       /**
