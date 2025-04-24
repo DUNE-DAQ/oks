@@ -232,9 +232,6 @@ PYBIND11_MODULE(_daq_oks_py, m)
 
 
     // // GetVersion
-    // // get_host_name
-    // // get_domain_name
-    // // get_user_name
     // // get_skip_string_range
     // // set_skip_string_range
     // // check_read_only
@@ -243,7 +240,6 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // // get_tmp_file
     // // get_cwd
     // // reset_cwd
-    // // set_use_string_repository_path
     ;
 
 
