@@ -194,9 +194,12 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // // get_repository_versions_by_hash
     // // get_repository_versions_by_date
     // // read_repository_version
-    // // insert_repository_dir
-    // // remove_repository_dir 
-    // // classes
+
+    // insert_repository_dir
+    .def("insert_repository_dir",&OksKernel::insert_repository_dir)
+    // remove_repository_dir 
+    .def("remove_repository_dir",&OksKernel::remove_repository_dir)
+    // classes
     .def("classes",&OksKernel::classes, py::return_value_policy::reference_internal)
     // number_of_classes
     .def("number_of_classes",&OksKernel::number_of_classes)
