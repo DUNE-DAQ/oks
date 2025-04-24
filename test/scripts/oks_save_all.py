@@ -4,11 +4,10 @@ from rich import print
 import click
 import oks
 
-
-
 @click.command()
 @click.argument("database", type=click.Path(exists=False, dir_okay=False))
 def cli(database):
+
     print(database)
 
     k = oks.OksKernel(verbose_mode = True)

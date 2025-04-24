@@ -26,12 +26,12 @@ PYBIND11_MODULE(_daq_oks_py, m)
   py::class_<OksFile>(m, "OksFile");
   // py::class_<OksFile::Map>(m, "OksFileMap");
   py::class_<OksClass, std::unique_ptr<OksClass, py::nodelete>>(m, "OksClass")
-      .def("get_name",&OksClass::get_name, py::return_value_policy::reference)
-      .def("get_description",&OksClass::get_description, py::return_value_policy::reference)
+      .def("get_name",&OksClass::get_name, py::return_value_policy::reference_internal)
+      .def("get_description",&OksClass::get_description, py::return_value_policy::reference_internal)
       .def("get_is_abstract",&OksClass::get_is_abstract)
-      .def("all_super_classes",&OksClass::all_super_classes, py::return_value_policy::reference)
-      .def("direct_super_classes",&OksClass::direct_super_classes, py::return_value_policy::reference)
-      .def("all_sub_classes",&OksClass::all_sub_classes, py::return_value_policy::reference)
+      .def("all_super_classes",&OksClass::all_super_classes, py::return_value_policy::reference_internal)
+      .def("direct_super_classes",&OksClass::direct_super_classes, py::return_value_policy::reference_internal)
+      .def("all_sub_classes",&OksClass::all_sub_classes, py::return_value_policy::reference_internal)
   ;
   py::class_<OksObject, std::unique_ptr<OksObject, py::nodelete>>(m, "OksObject");
 
@@ -51,13 +51,13 @@ PYBIND11_MODULE(_daq_oks_py, m)
       // .def("load_data",&OksKernel::load_file, "name"_a, "bind"_a = true)
       // .def("close_all_data",&OksKernel::close_all_data)
       // -- 
-      // .def("classes",&OksKernel::classes, py::return_value_policy::reference)
+      // .def("classes",&OksKernel::classes, py::return_value_policy::reference_internal)
       // .def("number_of_classes",&OksKernel::number_of_classes)
-      // .def("objects",&OksKernel::objects, py::return_value_policy::reference)
+      // .def("objects",&OksKernel::objects, py::return_value_policy::reference_internal)
       // .def("number_of_objects",&OksKernel::number_of_objects)
       //
       // .def("find_class",&OksKernel::find_class)
-      // .def("find_object",&OksKernel::find_object, py::return_value_policy::reference)
+      // .def("find_object",&OksKernel::find_object, py::return_value_policy::reference_internal)
 
       // 
       // .def("get_test_duplicated_objects_via_inheritance_mode", &OksKernel::get_test_duplicated_objects_via_inheritance_mode)
@@ -99,8 +99,8 @@ PYBIND11_MODULE(_daq_oks_py, m)
     //! get_mutex 
     // find_schema_file
     // find_data_file
-    .def("find_schema_file",&OksKernel::find_schema_file)
-    .def("find_data_file",&OksKernel::find_data_file)
+    .def("find_schema_file",&OksKernel::find_schema_file, py::return_value_policy::reference_internal)
+    .def("find_data_file",&OksKernel::find_data_file, py::return_value_policy::reference_internal)
 
     // create_list_of_schema_classes
     // create_list_of_data_objects
@@ -158,7 +158,7 @@ PYBIND11_MODULE(_daq_oks_py, m)
     //! get_updated_repository_files
 
     // load_data
-    .def("load_data",&OksKernel::load_data, "name"_a, "bind"_a = true)
+    .def("load_data",&OksKernel::load_data, "name"_a, "bind"_a = true, py::return_value_policy::reference_internal)
     // reload_data
     .def("reload_data",&OksKernel::reload_data, "files"_a, "allow_schema_extension"_a = true)
     
@@ -174,10 +174,12 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // close_all_data
     .def("close_all_data",&OksKernel::close_all_data)
 
-    // // set_active_data
-    // // get_active_daat
+    // set_active_data
+    .def("set_active_data", &OksKernel::set_active_data)
+    // get_active_daat
+    .def("get_active_data", &OksKernel::get_active_data, py::return_value_policy::reference_internal)
     // data_files
-    .def("data_files",&OksKernel::data_files)
+    .def("data_files", &OksKernel::data_files, py::return_value_policy::reference_internal)
 
     // // create_list_of_updated_data_files
     // // get_modified_files
@@ -195,11 +197,11 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // // insert_repository_dir
     // // remove_repository_dir 
     // // classes
-    .def("classes",&OksKernel::classes, py::return_value_policy::reference)
+    .def("classes",&OksKernel::classes, py::return_value_policy::reference_internal)
     // number_of_classes
     .def("number_of_classes",&OksKernel::number_of_classes)
     // objects
-    .def("objects",&OksKernel::objects, py::return_value_policy::reference)
+    .def("objects",&OksKernel::objects, py::return_value_policy::reference_internal)
     // number_of_objects
     .def("number_of_objects",&OksKernel::number_of_objects) 
     // find_class
