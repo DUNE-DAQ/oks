@@ -1,7 +1,6 @@
 #ifndef OKS_KERNEL_UTILS_H
 #define OKS_KERNEL_UTILS_H
 
-#include "conffwk/map.hpp"
 #include "oks/exceptions.hpp"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -29,7 +28,12 @@ class OksKernel;
     // the structure for efficient search of objects to be re-read or to be deleted during reload
 
   struct ReloadObjects {
-    std::map< const OksClass *, conffwk::map<OksObject *> * > data;
+
+
+    template<typename T>
+    using map_str_t = std::map<std::string, T>;
+
+    std::map< const OksClass *, map_str_t<OksObject *> * > data;
     std::vector<OksObject *> created;
 
     ~ReloadObjects();

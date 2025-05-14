@@ -559,9 +559,9 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
     else if( __builtin_expect((c != nullptr), 1) ) {
       if( __builtin_expect((re_read == true), 0) ) {
         OksData *d_end = data + c->number_of_all_attributes() + c->number_of_all_relationships();
-	for(OksData *di = data; di < d_end; ++di) {
-	  di->Clear();
-	}
+        for(OksData *di = data; di < d_end; ++di) {
+          di->Clear();
+        }
       }
 
       init2();
@@ -579,7 +579,7 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
       if(*tag_start == '/' && !memcmp(tag_start + 1, read_params.object_tag, read_params.object_tag_len)) { break; }
 
 
-	// extra check, if the object is empty
+        // extra check, if the object is empty
 
       if(oks::cmp_str3(tag_start, "obj")) {
         read_params.s.seek_position(-5);
@@ -592,8 +592,8 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
       else if(oks::cmp_str4(tag_start, attribute_xml_tag)) {
         OksData::Type type(OksData::unknown_type);
         int32_t num = -1; // -1 => no mv-data read
-	const OksAttribute * a(0);
-	OksXmlValue value;
+        const OksAttribute * a(0);
+        OksXmlValue value;
         bool attr_is_closed(false);
 
           // read 'oks-attribute' tag attributes
@@ -621,18 +621,18 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
                 i_name.assign(attr.value(), attr.value_len());
                 info_i = c->p_data_info->find(i_name);
                 if( __builtin_expect((info_i == c->p_data_info->end() || info_i->second->attribute == nullptr), 0) ) {
-		  if(non_silent_mode) {
+                  if(non_silent_mode) {
                     std::string msg = std::string("Read object \"") + GetId() + '@' + c->get_name() + '\"';
                     std::lock_guard lock(OksKernel::p_parallel_out_mutex);
                     Oks::warning_msg(msg.c_str()) << "  skip attribute \"" << attr.value() << "\", which is not defined in the schema\n";
-		  }
-		}
-		else {
-		  info = info_i->second;
-		  a = info->attribute;
-		}
-	      }
-	    }
+                  }
+                }
+                else {
+                  info = info_i->second;
+                  a = info->attribute;
+                }
+              }
+            }
             else if(oks::cmp_str4(attr.name(), type_xml_attribute)) {
               type = OksAttribute::get_data_type(attr.value(),attr.value_len());
               if( __builtin_expect((type == OksData::unknown_type), 0) ) {
@@ -673,15 +673,15 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
           throw oks::FailedRead("attribute value header", e.what());
         }
 
-	// read 'oks-attribute' body
+        // read 'oks-attribute' body
         if( __builtin_expect((a != nullptr), 1) ) {
           OksData * d = &data[info->offset];
           OksData * dx;
 
           if( __builtin_expect((check_re_read), 0) ) {
             dx = &dd;
-	    read_attributes->remove(a);
-	  }
+            read_attributes->remove(a);
+          }
           else {
             dx = d;
           }
@@ -699,13 +699,13 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
 
             if(num == -1) {
               if( __builtin_expect((a->get_data_type() != type || a->get_is_multi_values()), 0) ) {
-	        OksAttribute a2((type != OksData::enum_type ? type : OksData::string_type), c);
+                OksAttribute a2((type != OksData::enum_type ? type : OksData::string_type), c);
 
                 OksData d2;
-	        if(read_params.format != 'n')
+                if(read_params.format != 'n')
                   d2.read(read_params, &a2);
-	        else
-	          d2.read(&a2, value);
+                else
+                  d2.read(&a2, value);
                 d2.cvt(dx, a);
                 if(non_silent_mode) {
                   __report_type_cvt_warning(read_params, *a, *dx, type, num);
@@ -720,8 +720,8 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
             }
             else {
               if( __builtin_expect((a->get_data_type() != type || !a->get_is_multi_values()), 0) ) {
-	        OksAttribute a2((type != OksData::enum_type ? type : OksData::string_type), c);
-	        OksData d2;
+                OksAttribute a2((type != OksData::enum_type ? type : OksData::string_type), c);
+                OksData d2;
                 if(read_params.format != 'n')
                   d2.read(read_params, &a2, num);
                 else
@@ -761,17 +761,17 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
           }
 
 
-	  if( __builtin_expect((check_re_read), 0) ) {
-	    if(*dx != *d) {
-	      was_updated = true;
+          if( __builtin_expect((check_re_read), 0) ) {
+            if(*dx != *d) {
+              was_updated = true;
               *d = *dx;
-	    }
+            }
             dd.Clear();
-	  }
+          }
         }
         else {
-	  try {
-	    OksAttribute a2((type != OksData::enum_type ? type : OksData::string_type), c);
+          try {
+            OksAttribute a2((type != OksData::enum_type ? type : OksData::string_type), c);
             if(num == -1) {
               // note, there is no need to read single-value in case of "normal" format
               if(read_params.format != 'n')
@@ -783,17 +783,17 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
               else
                 OksData(&a2, read_params);
             }
-	  }
+          }
           catch (oks::exception & e) {
             throw oks::FailedReadObject(this, "dummu attribute", e);
           }
           catch (std::exception & e) {
             throw oks::FailedReadObject(this, "dummu attribute", e.what());
           }
-	}
+        }
 
 
-	  // read 'oks-attribute' close tag
+          // read 'oks-attribute' close tag
 
         if(read_params.format != 'n')
           try {
@@ -820,7 +820,7 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
 
       else if(oks::cmp_str3(tag_start, relationship_xml_tag)) {
         int32_t num = -1; // -1 => no mv-data read
-	OksRelationship * r(nullptr);
+        OksRelationship * r(nullptr);
         OksXmlRelValue value(read_params);
 
           // read 'oks-relationship' tag attributes
@@ -839,20 +839,20 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
               if( __builtin_expect((c != nullptr), 1) ) {
                 i_name.assign(attr.value(), attr.value_len());
                 info_i = c->p_data_info->find(i_name);
-		if( __builtin_expect((info_i == c->p_data_info->end() || info_i->second->relationship == nullptr), 0) ) {
-		  if(non_silent_mode) {
+                if( __builtin_expect((info_i == c->p_data_info->end() || info_i->second->relationship == nullptr), 0) ) {
+                  if(non_silent_mode) {
                     std::string msg = std::string("Read object \"") + GetId() + '@' + c->get_name() + '\"';
                     std::lock_guard lock(OksKernel::p_parallel_out_mutex);
                     Oks::warning_msg(msg.c_str()) << "  skip relationship \"" << attr.value() << "\", which is not defined in the schema\n";
-		  }
-		}
-		else {
-	          info = info_i->second;
+                  }
+                }
+                else {
+                  info = info_i->second;
                   r = const_cast<OksRelationship *>(info->relationship);
-		}
-	      }
+                }
+              }
               continue;
-	    }
+            }
             else if(read_params.format == 'n') {
               if(oks::cmp_str5(attr.name(), class_xml_attribute)) {
                 value.m_class = uid.class_id->get_kernel()->find_class(attr.value());
@@ -887,7 +887,7 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
         if (read_params.format == 'n' && value.is_empty() == true)
           num = 0;
 
-	  // read 'oks-relationship' body
+          // read 'oks-relationship' body
 
         if( __builtin_expect((r != nullptr), 1) ) {
           OksData *d = &data[info->offset];
@@ -897,8 +897,8 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
 
           if( __builtin_expect((check_re_read), 0) ) {
             dx = &dd;
-	    read_relationships->remove(r);
-	  }
+            read_relationships->remove(r);
+          }
           else {
             dx = d;
           }
@@ -948,13 +948,13 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
             throw oks::FailedReadObject(this, std::string("relationship \"") + r->get_name() + '\"', e.what());
           }
 
-	  if(check_re_read) {
-	    if(*dx != *d) {
-	      was_updated = true;
-	      *d = *dx;
-	    }
+          if(check_re_read) {
+            if(*dx != *d) {
+              was_updated = true;
+              *d = *dx;
+            }
             dd.Clear();
-	  }
+          }
         }
         else {
           OksRelationship r("_ _ *** dummy *** _ _"); // temporal relationship to use right OksData constructor call
@@ -970,7 +970,7 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
               else
                 OksData(read_params, &r, num);
             }
-	  }
+          }
           catch (oks::exception & e) {
             throw oks::FailedReadObject(this, "dummu relationship", e);
           }
@@ -980,7 +980,7 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
         }
 
 
-	  // read 'oks-relationship' close tag
+          // read 'oks-relationship' close tag
 
         if(read_params.format != 'n')
           try {
@@ -1017,40 +1017,40 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
     if( __builtin_expect((check_re_read), 0) ) {
       if(read_attributes) {
         if(!read_attributes->empty()) {
-	  for(auto i = read_attributes->begin(); i != read_attributes->end(); i = read_attributes->erase(i)) {
+          for(auto i = read_attributes->begin(); i != read_attributes->end(); i = read_attributes->erase(i)) {
             OksData d = (*i)->p_init_data;
             try {
-	      OksData *d2(GetAttributeValue((*i)->get_name()));
-	      if(*d2 != d) {
-	        *d2 = d;
-	        was_updated = true;
-	      }
+              OksData *d2(GetAttributeValue((*i)->get_name()));
+              if(*d2 != d) {
+                *d2 = d;
+                was_updated = true;
+              }
             }
             catch(oks::exception& ex) {
               throw oks::ObjectInitError(this, std::string("cannot reset default value of attribute \"") + (*i)->get_name() + '\"', ex);
             }
-	  }
-	}
+          }
+        }
 
         delete read_attributes;
       }
 
       if(read_relationships) {
         if(!read_relationships->empty()) {
-	  for(auto i = read_relationships->begin(); i != read_relationships->end(); i = read_relationships->erase(i)) {
-	    OksData d; d.ReadFrom(*i);
+          for(auto i = read_relationships->begin(); i != read_relationships->end(); i = read_relationships->erase(i)) {
+            OksData d; d.ReadFrom(*i);
             try {
-	      OksData *d2(GetRelationshipValue((*i)->get_name()));
-	      if(d2 && *d2 != d) {
-	        *d2 = d;
-	        was_updated = true;
-	      }
+              OksData *d2(GetRelationshipValue((*i)->get_name()));
+              if(d2 && *d2 != d) {
+                *d2 = d;
+                was_updated = true;
+              }
             }
             catch(oks::exception& ex) {
               throw oks::ObjectInitError(this, std::string("cannot reset value of relationship \"") + (*i)->get_name() + '\"', ex);
             }
-	  }
-	}
+          }
+        }
 
         delete read_relationships;
       }
@@ -1079,21 +1079,21 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
             d.read(read_params, i);
           }
 
-	  if(d != data[count]) {
-	    data[count] = d;
-	    was_updated = true;
-	  }
-	}
-	else {
+          if(d != data[count]) {
+            data[count] = d;
+            was_updated = true;
+          }
+        }
+        else {
           if(i->get_is_multi_values()) {
             data[count].read(read_params, i, __get_num(read_params));
           }
           else {
             data[count].read(read_params, i);
           }
-	}
+        }
 
-	count++;
+        count++;
       }
     }
 
@@ -1113,17 +1113,17 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
             data[count] = d;
             was_updated = true;
           }
-	}
-	else {
+        }
+        else {
           if(i->get_high_cardinality_constraint() == OksRelationship::Many) {
             data[count].read(read_params, i, __get_num(read_params));
           }
           else {
             data[count].read(read_params, i);
           }
-	}
+        }
 
-	count++;
+        count++;
       }
     }
 
@@ -1134,7 +1134,7 @@ OksObject::read_body(const oks::ReadFileParams& read_params, bool re_read)
     
       if(*tag_start != '/' || memcmp(tag_start + 1, read_params.object_tag, read_params.object_tag_len)) {
         std::ostringstream s;
-	s << "Failed to read obj close tag (\'/" << read_params.object_tag << "\' is expected)";
+        s << "Failed to read obj close tag (\'/" << read_params.object_tag << "\' is expected)";
         throw std::runtime_error( s.str().c_str() );
       }
     }
@@ -1238,17 +1238,17 @@ OksObject::OksObject(const OksObject& parentObj, const char *object_id) : data(n
 
       if(parentObj.data[j].type == OksData::list_type) {
         data[j].Set(new OksData::List());
-  		
+                  
         if(parentObj.data[j].data.LIST) {
           for(const auto& i2 : *parentObj.data[j].data.LIST) {
-	    if(i2->type == OksData::object_type)
+            if(i2->type == OksData::object_type)
               AddRelationshipValue(relationshipName, i2->data.OBJECT);
-	    else {
-	      OksData * uid_d = new OksData();
-	      uid_d = i2;
-	      data[j].data.LIST->push_back(uid_d);
-	    }
-	  }
+            else {
+              OksData * uid_d = new OksData();
+              uid_d = i2;
+              data[j].data.LIST->push_back(uid_d);
+            }
+          }
         }
       }
       else {
@@ -1318,30 +1318,30 @@ OksObject::destroy(OksObject *o, bool fast)
     if(const OksObject::Map * objects = c->objects()) {
       for(OksObject::Map::const_iterator j = objects->begin(); j != objects->end(); ++j) {
         size_t offset = c->number_of_all_attributes();
-	for(std::list<OksRelationship *>::iterator k = c->p_all_relationships->begin(); k != c->p_all_relationships->end(); ++k, ++offset) {
-	  OksData * d = j->second->data + offset;
-	  OksObject * ref = nullptr;
+        for(std::list<OksRelationship *>::iterator k = c->p_all_relationships->begin(); k != c->p_all_relationships->end(); ++k, ++offset) {
+          OksData * d = j->second->data + offset;
+          OksObject * ref = nullptr;
 
-	  if(d->type == OksData::object_type && d->data.OBJECT == o) {
-	    ref = j->second;
-	  }
-	  else if(d->type == OksData::list_type && d->data.LIST != nullptr) {
-	    for(const auto& l : *d->data.LIST) {
-	      if(l->type == OksData::object_type && l->data.OBJECT == o) {
-	        ref = j->second;
-		break;
-	      }
-	    }
-	  }
+          if(d->type == OksData::object_type && d->data.OBJECT == o) {
+            ref = j->second;
+          }
+          else if(d->type == OksData::list_type && d->data.LIST != nullptr) {
+            for(const auto& l : *d->data.LIST) {
+              if(l->type == OksData::object_type && l->data.OBJECT == o) {
+                ref = j->second;
+                break;
+              }
+            }
+          }
 
-	  if(ref) {
+          if(ref) {
             if(!error_text.get()) {
               error_text.reset(new std::ostringstream());
               *error_text << "since it is referenced by:";
             }
             *error_text << "\n   * object " << ref << " via relationship \"" << (*k)->get_name() << '\"';
-	  }
-	}
+          }
+        }
       }
     }
   }
@@ -1546,7 +1546,7 @@ OksObject::set_id(const std::string &new_id)
             const OksData & d = o->data[k];
             if(d.type == OksData::object_type && d.data.OBJECT == this) {
               updated_objects.push_back(o);
-	      updated_files.insert(o->file);
+              updated_files.insert(o->file);
               o = nullptr; // break loop
             }
             else if(d.type == OksData::list_type && d.data.LIST) {
@@ -1555,7 +1555,7 @@ OksObject::set_id(const std::string &new_id)
                 OksData * d2 = *l;
                 if(d2->type == OksData::object_type && d2->data.OBJECT == this) {
                   updated_objects.push_back(o);
-	          updated_files.insert(o->file);
+                  updated_files.insert(o->file);
                   o = nullptr; // break loop
                   break;
                 }
@@ -1692,7 +1692,7 @@ operator<<(std::ostream& s, const OksObject& o)
 
     if(rlist && !rlist->empty()) {
       s << " Relationships are:\n";
-	
+        
       for(std::list<OksRelationship *>::const_iterator i = rlist->begin(); i != rlist->end(); ++i)
         s << "  " << (*i)->get_name() << ": " << *di++ << std::endl;
     }
@@ -2113,8 +2113,8 @@ OksObject::SetRelationshipValue(const OksDataInfo *odi, OksData *d, bool skip_no
       if(i->type == OksData::object_type) {
         if(OksObject * o2 = i->data.OBJECT) {
           check_class_type(r, o2);
-	  added_objs.insert(o2);
-	}
+          added_objs.insert(o2);
+        }
       }
     }
   }
@@ -2132,9 +2132,9 @@ OksObject::SetRelationshipValue(const OksDataInfo *odi, OksData *d, bool skip_no
 
   if(data[offset].type == OksData::list_type && data[offset].data.LIST) {
       for(const auto& i : *data[offset].data.LIST) {
-	if(i->type == OksData::object_type && i->data.OBJECT) {
-	  removed_objs.insert(i->data.OBJECT);
-	}
+        if(i->type == OksData::object_type && i->data.OBJECT) {
+          removed_objs.insert(i->data.OBJECT);
+        }
       }
   }
 
@@ -2199,7 +2199,7 @@ OksObject::SetRelationshipValue(const std::string& name, OksData *d, bool skip_n
   SetRelationshipValue(i->second, d, skip_non_null_check);
 }
 
-	
+        
 void
 OksObject::SetRelationshipValue(const OksDataInfo *odi, OksObject *object)
 {
@@ -2257,7 +2257,7 @@ OksObject::SetRelationshipValue(const std::string& name, OksObject *o)
   SetRelationshipValue(i->second, o);
 }
 
-	
+        
 
 static bool
 cmp_data(OksData * d, OksData * d2)
@@ -2583,12 +2583,12 @@ OksObject::add_RCR(OksObject *o, const OksRelationship *r)
   else {
     for(const auto& i : *p_rcr) {
       if(i->relationship == r) {
-	if(i->obj == o) {
-	  TLOG_DEBUG(4) << "[this=" << this << ", o=" << o << ", r=\"" << r->get_name() << "\"]: such RCR was already set.";
-	  return;
-  	}
+        if(i->obj == o) {
+          TLOG_DEBUG(4) << "[this=" << this << ", o=" << o << ", r=\"" << r->get_name() << "\"]: such RCR was already set.";
+          return;
+          }
         else if(r->get_is_exclusive()) {
-	  throw oks::AddRcrError(this, r->get_name(), o, i->obj);
+          throw oks::AddRcrError(this, r->get_name(), o, i->obj);
         }
       }
     }
@@ -2836,30 +2836,30 @@ OksObject::unbind_file(const OksFile * f)
       if(d->type == OksData::object_type) {
         OksObject * o = d->data.OBJECT;
 
-	if(o && o->file == f) {
+        if(o && o->file == f) {
           if(verbose)
-	    std::cout << "- unbind_file(\'" << f->get_full_file_name() << "\') in " << this << ": replace " << *d;
+            std::cout << "- unbind_file(\'" << f->get_full_file_name() << "\') in " << this << ": replace " << *d;
 
-	  d->Set(o->GetClass(), o->GetId());
+          d->Set(o->GetClass(), o->GetId());
 
           if(verbose) std::cout << " by " << *d << std::endl;
-	}
+        }
       }
       else if(d->type == OksData::list_type && d->data.LIST) {
         for(const auto& j : *d->data.LIST) {
-	  if(j && j->type == OksData::object_type) {
+          if(j && j->type == OksData::object_type) {
             OksObject * o = j->data.OBJECT;
 
-	    if(o && o->file == f) {
+            if(o && o->file == f) {
               if(verbose)
-	        std::cout << "+ unbind_file(\'" << f->get_full_file_name() << "\') in " << this << ": replace " << *j;
+                std::cout << "+ unbind_file(\'" << f->get_full_file_name() << "\') in " << this << ": replace " << *j;
 
-	      j->Set(o->GetClass(), o->GetId());
+              j->Set(o->GetClass(), o->GetId());
 
               if(verbose) std::cout << " by " << *j << std::endl;
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
   }
@@ -2920,8 +2920,8 @@ OksObject::check_links_and_report(const OksObject * o2, const std::set<OksFile *
       if(GetClass()->get_kernel()->get_silence_mode() == false) {
         std::cerr <<
           msg << ": no files inclusion path between referenced objects:\n"
-	  "  object " << this << " from file \"" << get_file()->get_full_file_name() << "\" via relationship \"" << name << "\"\n"
-	  "  has reference to object " << o2 << " from file \"" << o2->get_file()->get_full_file_name() << "\";\n"
+          "  object " << this << " from file \"" << get_file()->get_full_file_name() << "\" via relationship \"" << name << "\"\n"
+          "  has reference to object " << o2 << " from file \"" << o2->get_file()->get_full_file_name() << "\";\n"
           "  file \"" << get_file()->get_full_file_name() << "\" includes " << includes.size() << " files:\n";
 
         for(std::set<OksFile *>::const_iterator j = includes.begin(); j != includes.end(); ++j) {
@@ -3140,16 +3140,16 @@ OksObject::get_all_rels(const std::string& name) const
       if(const OksObject::Map * objs = i->second->objects()) {
         for(OksObject::Map::const_iterator j = objs->begin(); j != objs->end(); ++j) {
           OksObject *o(j->second);
-	  unsigned short l1, l2;
-	  
-	  if(any_name) {
+          unsigned short l1, l2;
+          
+          if(any_name) {
             l1 = c->number_of_all_attributes();
             l2 = l1 + c->number_of_all_relationships();
-	  }
-	  else {
-	    l1 = c->data_info(name)->offset;
-	    l2 = l1+1;
-	  }
+          }
+          else {
+            l1 = c->data_info(name)->offset;
+            l2 = l1+1;
+          }
 
           while(l1 < l2) {
             OksDataInfo odi(l1, (OksRelationship *)0);
@@ -3158,20 +3158,20 @@ OksObject::get_all_rels(const std::string& name) const
             if(d->type == OksData::object_type) {
               if(this == d->data.OBJECT) {
                 if(!result) result = new OksObject::FList();
-		result->push_back(o);
-		break;
+                result->push_back(o);
+                break;
               }
             }
             else if(d->type == OksData::list_type) {
-	      bool found = false;
+              bool found = false;
               for(OksData::List::const_iterator li = d->data.LIST->begin(); li != d->data.LIST->end(); ++li) {
                 OksData * lid(*li);
                 if(lid->type == OksData::object_type) {
                   if(this == lid->data.OBJECT) {
                     if(!result) result = new OksObject::FList();
-		    result->push_back(o);
-		    found = true;
-		    break; // exit given relationship value iterator
+                    result->push_back(o);
+                    found = true;
+                    break; // exit given relationship value iterator
                   }
                 }
               }
