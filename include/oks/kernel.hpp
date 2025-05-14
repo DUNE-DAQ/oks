@@ -582,7 +582,9 @@ class OksKernel
   friend struct OksLoadObjectsJob;
   friend struct OksData;
 
-
+  template<typename T>
+  using map_str_t = std::map<std::string, T>;
+  
   public:
 
       /**
@@ -1408,7 +1410,7 @@ class OksKernel
        *  \throw Throw oks::exception in case of problems.
        */
 
-    void save_all_data();
+    void save_all_data(bool force_defaults=false);
 
 
       /**
