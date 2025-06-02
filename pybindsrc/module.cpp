@@ -152,7 +152,7 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // get_active_schema
     .def("get_active_schema",&OksKernel::get_active_schema)
     // schema_files
-    .def("schema_files",&OksKernel::schema_files)
+    .def("schema_files",&OksKernel::schema_files, py::return_value_policy::reference_internal)
     
     //! create_list_of_upsated_schema_file
     //! get_updated_repository_files
