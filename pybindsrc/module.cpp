@@ -9,6 +9,11 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 #include "oks/kernel.hpp"
+#include "oks/attribute.hpp"
+#include "oks/class.hpp"
+#include "oks/relationship.hpp"
+#include "oks/method.hpp"
+#include "oks/file.hpp"
 
 namespace py = pybind11;
 
@@ -23,18 +28,7 @@ PYBIND11_MODULE(_daq_oks_py, m)
 
   m.doc() = "C++ implementation of the application dal modules";
 
-  py::class_<OksFile>(m, "OksFile");
   // py::class_<OksFile::Map>(m, "OksFileMap");
-  py::class_<OksClass, std::unique_ptr<OksClass, py::nodelete>>(m, "OksClass")
-      .def("get_name",&OksClass::get_name, py::return_value_policy::reference_internal)
-      .def("get_description",&OksClass::get_description, py::return_value_policy::reference_internal)
-      .def("get_is_abstract",&OksClass::get_is_abstract)
-      .def("all_super_classes",&OksClass::all_super_classes, py::return_value_policy::reference_internal)
-      .def("direct_super_classes",&OksClass::direct_super_classes, py::return_value_policy::reference_internal)
-      .def("all_sub_classes",&OksClass::all_sub_classes, py::return_value_policy::reference_internal)
-  ;
-  py::class_<OksObject, std::unique_ptr<OksObject, py::nodelete>>(m, "OksObject");
-
 
   py::class_<OksKernel>(m, "OksKernel")
       .def(py::init<bool, bool, bool, bool, const char *, std::string>(),
@@ -64,9 +58,6 @@ PYBIND11_MODULE(_daq_oks_py, m)
       // .def("set_test_duplicated_objects_via_inheritance_mode", &OksKernel::set_test_duplicated_objects_via_inheritance_mode)
       // .def("get_allow_duplicated_objects_mode", &OksKernel::get_allow_duplicated_objects_mode)
       // .def("set_allow_duplicated_objects_mode", &OksKernel::set_allow_duplicated_objects_mode)
-
-
-
 
     // 	get_verbose_mode
     // 	set_verbose_mode 
@@ -153,9 +144,6 @@ PYBIND11_MODULE(_daq_oks_py, m)
     .def("get_active_schema",&OksKernel::get_active_schema)
     // schema_files
     .def("schema_files",&OksKernel::schema_files)
-    
-    //! create_list_of_upsated_schema_file
-    //! get_updated_repository_files
 
     // load_data
     .def("load_data",&OksKernel::load_data, "name"_a, "bind"_a = true, py::return_value_policy::reference_internal)
@@ -181,20 +169,6 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // data_files
     .def("data_files", &OksKernel::data_files, py::return_value_policy::reference_internal)
 
-    // // create_list_of_updated_data_files
-    // // get_modified_files
-    // // get_repository_dirs
-    // // commit_repository
-    // // tag_repository
-    // // get_repository_checkout_ts
-    // // update_repository
-    // // get_repository_versions_diff
-    // // get_repository_unmerged_files
-    // // get_repository_versions
-    // // get_repository_versions_by_hash
-    // // get_repository_versions_by_date
-    // // read_repository_version
-
     // insert_repository_dir
     .def("insert_repository_dir",&OksKernel::insert_repository_dir)
     // remove_repository_dir 
@@ -212,15 +186,6 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // // get_all_classes
     // registrate_all_classes
     .def("registrate_all_classes",&OksKernel::registrate_all_classes) 
-    // is_dangling
-    // Class
-    // .def("is_dangling",&OksKernel::is_dangling) 
-    // Object
-    // .def("is_dangling",&OksKernel::is_dangling) 
-    // // subscribe_create_class
-    // // subscribe_change_class
-    // // subscribe_create_object
-    // // subscribe_delete_object
     // bind_objects
     .def("bind_objects",&OksKernel::bind_objects) 
     // get_bind_objects_status
@@ -230,19 +195,154 @@ PYBIND11_MODULE(_daq_oks_py, m)
     // unset_repository_created
     .def("unset_repository_created",&OksKernel::unset_repository_created) 
 
-
-    // // GetVersion
-    // // get_skip_string_range
-    // // set_skip_string_range
-    // // check_read_only
-    // // get_repository_root
-    // // get_repository_mapping_dir
-    // // get_tmp_file
-    // // get_cwd
-    // // reset_cwd
     ;
 
+    py::class_<OksFile>(m, "OksFile")
+      .def("add_include_file", &OksFile::add_include_file, "file_name"_a)
+      .def("remove_include_file", &OksFile::remove_include_file, "file_name"_a)
+      .def("remove_include_file", &OksFile::remove_include_file, "file"_a)
+      .def("get_include_files", &OksFile::get_include_files, py::return_value_policy::reference_internal)
+      .def("get_all_include_files", &OksFile::get_all_include_files, py::return_value_policy::reference_internal)
 
-}
+      .def("add_comment", &OksFile::add_comment, "text"_a, "author"_a = "")
+      .def("modify_comment", &OksFile::modify_comment, "creation_time"_a, "text"_a, "author"_a = "")
+      .def("remove_comment", &OksFile::remove_comment, "creation_time"_a)
 
+      .def("get_short_file_name", &OksFile::get_short_file_name)
+      .def("get_full_file_name", &OksFile::get_full_file_name)
+      .def("get_well_formed_name", &OksFile::get_well_formed_name)
+      .def("get_repository_name", &OksFile::get_repository_name)
+      ;
+ 
+ 
+    py::class_<OksClass, std::unique_ptr<OksClass, py::nodelete>>(m, "OksClass")
+      .def(py::init<const std::string&, OksKernel*, bool>(), "name"_a, "kernel"_a, "transient"_a = false)
+      .def(py::init<const std::string&, const std::string&, bool, OksKernel*, bool>(), "name"_a, "description"_a, "is_abstract"_a, "kernel"_a, "transient"_a = false)
+      .def(py::init<const std::string&, const std::string&, bool, OksKernel*>(), "name"_a, "description"_a, "is_abstract"_a, "kernel"_a)
+      .def("get_name",&OksClass::get_name, py::return_value_policy::reference_internal)
+      .def("get_description",&OksClass::get_description, py::return_value_policy::reference_internal)
+      .def("set_description",&OksClass::set_description, "description"_a)
+      .def("get_is_abstract",&OksClass::get_is_abstract)
+      .def("set_is_abstract",&OksClass::set_is_abstract, "is_abstract"_a)
+      .def("get_file",&OksClass::get_file, py::return_value_policy::reference_internal)
+      .def("set_file",&OksClass::set_file, "file"_a, "update_owner"_a = true)
+
+      .def("all_super_classes",&OksClass::all_super_classes, py::return_value_policy::reference_internal)
+      .def("direct_super_classes",&OksClass::direct_super_classes, py::return_value_policy::reference_internal)
+      .def("all_sub_classes",&OksClass::all_sub_classes, py::return_value_policy::reference_internal)
+      .def("add_super_class", &OksClass::add_super_class)
+      .def("remove_super_class", &OksClass::remove_super_class)
+      .def("swap_super_classes", &OksClass::swap_super_classes, "c1"_a, "c2"_a)
+      .def("destroy", &OksClass::destroy, "class"_a)
+      
+      // ** Add/Remove **∂
+      // Attributes
+      .def("add", py::overload_cast<OksAttribute*>(&OksClass::add), "attribute"_a)
+      .def("remove", py::overload_cast<const OksAttribute*>(&OksClass::remove), "attribute"_a)
+      .def("swap", py::overload_cast<const OksAttribute*, const OksAttribute*>(&OksClass::swap), "a1"_a, "a2"_a)
+      .def("number_of_direct_attributes", &OksClass::number_of_direct_attributes)
+      .def("number_of_all_attributes", &OksClass::number_of_all_attributes)
+      .def("all_attributes", &OksClass::all_attributes, py::return_value_policy::reference_internal)
+      .def("find_attribute", &OksClass::find_attribute, "name"_a, py::return_value_policy::reference_internal)
+      .def("find_direct_attribute", &OksClass::find_direct_attribute, "name"_a, py::return_value_policy::reference_internal)
+      
+      // Relationships
+      .def("add", py::overload_cast<OksRelationship*>(&OksClass::add), "r"_a)
+      .def("remove", py::overload_cast<const OksRelationship*, bool>(&OksClass::remove), "r"_a, "call_delete"_a = true)
+      .def("swap", py::overload_cast<const OksRelationship*, const OksRelationship*>(&OksClass::swap), "r1"_a, "r2"_a)
+      .def("all_relationships", &OksClass::all_relationships, py::return_value_policy::reference_internal)
+      .def("direct_relationships", &OksClass::direct_relationships, py::return_value_policy::reference_internal)
+      .def("find_relationship", &OksClass::find_relationship, "name"_a, py::return_value_policy::reference_internal)
+      .def("find_direct_relationship", &OksClass::find_direct_relationship, "name"_a, py::return_value_policy::reference_internal)
+      .def("number_of_direct_relationships", &OksClass::number_of_direct_relationships)
+      .def("number_of_all_relationships", &OksClass::number_of_all_relationships)
+
+      // Methods
+      .def("add", py::overload_cast<OksMethod*>(&OksClass::add), "method"_a)
+      .def("remove", py::overload_cast<const OksMethod*>(&OksClass::remove), "method"_a)
+      .def("swap", py::overload_cast<const OksMethod*, const OksMethod*>(&OksClass::swap), "m1"_a, "m2"_a)
+      .def("all_methods", &OksClass::all_methods, py::return_value_policy::reference_internal)
+      .def("direct_methods", &OksClass::direct_methods, py::return_value_policy::reference_internal)
+      .def("find_method", &OksClass::find_method, "name"_a, py::return_value_policy::reference_internal)
+      .def("find_direct_method", &OksClass::find_direct_method, "name"_a, py::return_value_policy::reference_internal)
+      .def("number_of_direct_methods", &OksClass::number_of_direct_methods)
+      .def("number_of_all_methods", &OksClass::number_of_all_methods)
+  ;
+
+  
+
+    // TODO: Split across multiple files
+    py::class_<OksAttribute, std::unique_ptr<OksAttribute, py::nodelete>>(m, "OksAttribute")
+      // Initialisers
+      .def(py::init<const std::string&, OksClass*>(), "name"_a, "class_ptr"_a=nullptr)
+      // .def(py::init<const std::string&, const std::string&, bool, const std::string&, const std::string&, const std::string&, bool, OksAttribute::Format=OksAttribute::Format::Dec, OksClass*>())
+      // Setters and Getters
+      .def("set_name", &OksAttribute::set_name)
+      .def("get_type", &OksAttribute::get_type)
+      .def("set_type", &OksAttribute::set_type)
+      .def("get_range", &OksAttribute::get_range)
+      .def("set_range", &OksAttribute::set_range)
+      .def("get_data_type", py::overload_cast<const std::string&>(&OksAttribute::get_data_type))
+      .def("get_data_type", py::overload_cast<const char*, size_t>(&OksAttribute::get_data_type))
+      // .def("get_data_type", py::overload_cast<>(&OksAttribute::get_data_type))
+      .def("get_format", &OksAttribute::get_format)
+      .def("set_format", &OksAttribute::set_format)
+      .def("is_integer", &OksAttribute::is_integer)
+      .def("is_number", &OksAttribute::is_number)
+      .def("get_is_multi_values", &OksAttribute::get_is_multi_values)
+      .def("set_is_multi_values", &OksAttribute::set_is_multi_values)
+      .def("get_init_value", &OksAttribute::get_init_value)
+      .def("set_init_value", &OksAttribute::set_init_value)
+      .def("get_description", &OksAttribute::get_description)
+      .def("set_description", &OksAttribute::set_description)
+      .def("get_is_no_null", &OksAttribute::get_is_no_null)
+      .def("set_is_no_null", &OksAttribute::set_is_no_null)
+      .def("find_token", &OksAttribute::find_token)
+      ;
+
+    py::enum_<OksRelationship::CardinalityConstraint>(m, "CardinalityConstraint")
+      .value("Zero", OksRelationship::CardinalityConstraint::Zero)
+      .value("One", OksRelationship::CardinalityConstraint::One)
+      .value("Many", OksRelationship::CardinalityConstraint::Many)
+      .export_values()
+    ;
+
+    py::class_<OksRelationship, std::unique_ptr<OksRelationship, py::nodelete>>(m, "OksRelationship")
+      // Initialisers
+      .def(py::init<const std::string&, const std::string&, OksRelationship::CardinalityConstraint, OksRelationship::CardinalityConstraint, bool,
+                    bool, bool, const std::string&, OksClass*>(),
+                  "name"_a, "type"_a, "low_cc"_a, "high_cc"_a, "composite"_a = false, "exclusive"_a = false, "dependent"_a = false,
+                  "description"_a = "", "parent"_a = nullptr)
+      .def("get_name", &OksRelationship::get_name, py::return_value_policy::reference_internal)
+      .def("set_name", &OksRelationship::set_name)
+      .def("get_type", &OksRelationship::get_type, py::return_value_policy::reference_internal)
+      .def("get_class_type", &OksRelationship::get_class_type, py::return_value_policy::reference_internal)
+      .def("set_type", &OksRelationship::set_type)
+      .def("get_description", &OksRelationship::get_description)
+      .def("set_description", &OksRelationship::set_description)
+      .def("get_low_cardinality_constraint", &OksRelationship::get_low_cardinality_constraint)
+      .def("set_low_cardinality_constraint", &OksRelationship::set_low_cardinality_constraint)
+      .def("get_high_cardinality_constraint", &OksRelationship::get_high_cardinality_constraint)
+      .def("set_high_cardinality_constraint", &OksRelationship::set_high_cardinality_constraint)
+      .def("get_is_composite", &OksRelationship::get_is_composite)
+      .def("set_is_composite", &OksRelationship::set_is_composite)
+      .def("get_is_exclusive", &OksRelationship::get_is_exclusive)
+      .def("set_is_exclusive", &OksRelationship::set_is_exclusive)
+      .def("get_is_dependent", &OksRelationship::get_is_dependent)
+      .def("set_is_dependent", &OksRelationship::set_is_dependent)
+      ;
+
+      py::class_<OksMethod, std::unique_ptr<OksMethod, py::nodelete>>(m, "OksMethod")
+      .def(py::init<const std::string&, OksClass*>(), "name"_a, "class_ptr"_a = nullptr)
+      .def("get_name", &OksMethod::get_name, py::return_value_policy::reference_internal)
+      .def("set_name", &OksMethod::set_name)
+      .def("get_description", &OksMethod::get_description)
+      .def("set_description", &OksMethod::set_description)
+      .def("implementations", &OksMethod::implementations, py::return_value_policy::reference_internal)
+      .def("add_implementation", &OksMethod::add_implementation, "language"_a, "prototype"_a, "body"_a)
+      .def("remove_implementation", &OksMethod::remove_implementation, "language"_a)
+      .def("find_implementation", &OksMethod::find_implementation, "name"_a, py::return_value_policy::reference_internal)
+      ;
+  
+    }
 } // namespace dunedaq::oks::python
