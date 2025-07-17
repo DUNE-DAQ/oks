@@ -16,7 +16,7 @@ find_package(fmt)
 # JCF, Oct-18-2022: stripped out functionality which requires authentication packages daq_tokens and pam
 daq_add_library( *.cpp LINK_LIBRARIES ers::ers Boost::thread Boost::date_time Boost::regex stdc++fs okssystem::okssystem logging::logging)
 
-daq_add_python_bindings(*.cpp LINK_LIBRARIES oks)
+daq_add_python_bindings(*.cpp)
 
 
 daq_add_application(oks_dump oks_dump.cxx LINK_LIBRARIES oks)
