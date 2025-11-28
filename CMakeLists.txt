@@ -20,6 +20,7 @@ daq_add_python_bindings(*.cpp)
 
 
 daq_add_application(oks_dump oks_dump.cxx LINK_LIBRARIES oks)
+daq_add_application(oks_check_schema oks_check_schema.cxx LINK_LIBRARIES CLI11::CLI11 fmt::fmt oks)
 daq_add_application(oks_git_repository oks_git_repository.cxx LINK_LIBRARIES oks)
 daq_add_application(oks_clone_repository oks_clone_repository.cxx LINK_LIBRARIES oks Boost::program_options)
 daq_add_application(oks_validate_repository oks_validate_repository.cxx LINK_LIBRARIES oks Boost::program_options)
