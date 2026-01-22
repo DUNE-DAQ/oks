@@ -9,12 +9,14 @@
  */
 
 #include "CLI/CLI.hpp"
+#include "logging/Logging.hpp"
 #include "oks/class.hpp"
 #include "oks/file.hpp"
 #include "oks/kernel.hpp"
 #include "oks/relationship.hpp"
 
 #include <fmt/core.h>
+#include <string>
 
 using namespace dunedaq::oks;
 
@@ -37,23 +39,23 @@ int main(int argc, char **argv) {
   CLI11_PARSE(app, argc, argv);
 
   OksKernel kernel;
-  OksFile* file;
   try {
-    file = kernel.load_file(filename);
+    const auto file = kernel.load_file(filename);
+    if (file == nullptr) {
+      TLOG() << "Failed to load " << filename;
+      return Exitcode::LOADFAIL;
+    }
   }
   catch (FailedLoadFile& fail) {
-    std::cerr << fail.what() << "\n";
+    TLOG() << fail.what() << "\n";
     return Exitcode::LOADFAIL;
   }
   catch (CanNotOpenFile& fail) {
-    std::cerr << fail.what() << "\n";
+    TLOG() << fail.what() << "\n";
     return Exitcode::NOFILE;
   }
   catch (std::exception& exc) {
-    std::cerr << exc.what() << "\n";
-    return Exitcode::LOADFAIL;
-  }
-  if (file == nullptr) {
+    TLOG() << exc.what() << "\n";
     return Exitcode::LOADFAIL;
   }
 
@@ -63,7 +65,7 @@ int main(int argc, char **argv) {
       for (auto rel: *relationships) {
         auto rel_class = rel->get_class_type();
         if (rel_class == nullptr) {
-          std::cerr << "Error class '" << name
+          TLOG() << "Error class '" << name
                     << "' has relationship '" << rel->get_name()
                     << "' to a class '" << rel->get_type()
                     << "' that is not loaded\n";
