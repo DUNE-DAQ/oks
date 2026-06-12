@@ -1,3 +1,10 @@
+/*
+ * DUNE DAQ modification notice:
+ * This file has been modified from the original ATLAS oks source for the DUNE DAQ project.
+ * Fork baseline commit: oks-08-03-04 (2022-04-14).
+ * Renamed since fork: yes (from oks/query.h to include/oks/query.hpp).
+ */
+
 /**	
  *	\file oks/query.h
  *	

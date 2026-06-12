@@ -1,3 +1,8 @@
+# DUNE DAQ modification notice:
+# This file has been modified from the original ATLAS oks source for the DUNE DAQ project.
+# Fork baseline commit: oks-08-03-04 (2022-04-14).
+# Renamed since fork: no.
+
 cmake_minimum_required(VERSION 3.12)
 project(oks VERSION 1.4.0)
 
