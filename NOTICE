@@ -9,7 +9,7 @@ code has been refactored for the DUNE DAQ.
 Consistent with the ATLAS "oks" repository's Apache 2.0 license:
 
 * A copy of the original ATLAS oks NOTICE is reproduced below and in
-  licenses_and_notices/NOTICE.
+  licenses_and_notices/NOTICE.oks_ATLAS.
 
 * A copy of the ATLAS oks Apache 2.0 license is included in
   licenses_and_notices/LICENSE.Apache2.0; it is to be considered only
