@@ -1,9 +1,7 @@
-/*
- * DUNE DAQ modification notice:
- * This file has been modified from the original ATLAS oks source for the DUNE DAQ project.
- * Fork baseline commit: oks-08-03-04 (2022-04-14).
- * Renamed since fork: yes (from oks/cstring.h to include/oks/cstring.hpp).
- */
+// DUNE DAQ modification notice:
+// This file has been modified from the original ATLAS oks source for the DUNE DAQ project.
+// Fork baseline commit: oks-08-03-04 (2022-04-14).
+// Renamed since fork: yes (from oks/cstring.h to include/oks/cstring.hpp).
 
 #ifndef OKS_CSTRING_CMP_H
 #define OKS_CSTRING_CMP_H
