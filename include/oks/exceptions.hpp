@@ -2,51 +2,54 @@
 #define OKS_EXCEPTIONS_H
 
 #include <exception>
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace dunedaq {
 namespace oks {
 
-    /** Generic OKS exception. **/
+/** Generic OKS exception. **/
 
-  class exception : public std::exception {
+class exception : public std::exception
+{
 
-    private:
+private:
+  std::string p_what;
+  int p_level;
 
-      std::string p_what;
-      int p_level;
+public:
+  exception(const std::string& what_arg, int level_arg) noexcept;
 
+  virtual ~exception() noexcept {}
 
-    public:
+  /** The level indicates position of nested oks exception. **/
 
-      exception(const std::string& what_arg, int level_arg) noexcept;
+  int level() const noexcept { return p_level; }
 
-      virtual ~exception() noexcept { }
+  /** Return reason in a string representation. **/
 
+  virtual const char* what() const noexcept { return p_what.c_str(); }
+};
 
-        /** The level indicates position of nested oks exception. **/
+inline std::ostream&
+operator<<(std::ostream& s, const oks::exception& ex)
+{
+  s << ex.what();
+  return s;
+}
 
-      int level() const noexcept { return p_level; }
+void
+throw_validate_not_empty(const char* name);
 
+/** Check string value is not empty. Throw exception if length = 0. **/
 
-        /** Return reason in a string representation. **/
-
-      virtual const char * what() const noexcept { return p_what.c_str(); }
-
-  };
-
-  inline std::ostream & operator<<( std::ostream & s, const oks::exception & ex) { s << ex.what(); return s; }
-
-  void throw_validate_not_empty(const char * name);
-
-
-    /** Check string value is not empty. Throw exception if length = 0. **/
-
-  inline void validate_not_empty(const std::string& value, const char * name) {
-    if(value.empty()) throw_validate_not_empty(name);
-  }
-} //namespace oks
-} //namespace dunedaq
+inline void
+validate_not_empty(const std::string& value, const char* name)
+{
+  if (value.empty())
+    throw_validate_not_empty(name);
+}
+} // namespace oks
+} // namespace dunedaq
 
 #endif

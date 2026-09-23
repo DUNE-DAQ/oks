@@ -3,8 +3,8 @@
 
 #include "oks/exceptions.hpp"
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include <map>
 #include <string>
@@ -19,96 +19,104 @@ class OksFile;
 struct OksAliasTable;
 class OksKernel;
 
-    // read date and time strings from OKS files (oks::Date, oks::Time or Boost ISO strings)
+// read date and time strings from OKS files (oks::Date, oks::Time or Boost ISO strings)
 
-  boost::posix_time::ptime str2time(const char * value, size_t len, const char * file_name = nullptr);
-  boost::gregorian::date str2date(const char * value, size_t len);
+boost::posix_time::ptime
+str2time(const char* value, size_t len, const char* file_name = nullptr);
+boost::gregorian::date
+str2date(const char* value, size_t len);
 
+// the structure for efficient search of objects to be re-read or to be deleted during reload
 
-    // the structure for efficient search of objects to be re-read or to be deleted during reload
+struct ReloadObjects
+{
 
-  struct ReloadObjects {
+  template<typename T>
+  using map_str_t = std::map<std::string, T>;
 
+  std::map<const OksClass*, map_str_t<OksObject*>*> data;
+  std::vector<OksObject*> created;
 
-    template<typename T>
-    using map_str_t = std::map<std::string, T>;
+  ~ReloadObjects();
+  void put(OksObject* obj);
+  OksObject* pop(const OksClass* c, const std::string& id);
+};
 
-    std::map< const OksClass *, map_str_t<OksObject *> * > data;
-    std::vector<OksObject *> created;
+// the structure to pass common parameters to various read() methods of OksData and OksObject class
 
-    ~ReloadObjects();
-    void put(OksObject * obj);
-    OksObject * pop(const OksClass* c, const std::string& id);
-  };
+struct ReadFileParams
+{
+  OksFile* f;
+  OksXmlInputStream& s;
+  OksAliasTable* alias_table;
+  OksKernel* oks_kernel;
+  char format;
+  ReloadObjects* reload_objects;
+  const char* object_tag;
+  size_t object_tag_len;
+  OksObject* owner;
+  std::string tmp;
 
+  ReadFileParams(OksFile* f_, OksXmlInputStream& s_, OksAliasTable* t_, OksKernel* k_, char m_, ReloadObjects* l_)
+    : f(f_)
+    , s(s_)
+    , alias_table(t_)
+    , oks_kernel(k_)
+    , format(m_)
+    , reload_objects(l_)
+  {
+    init();
+  }
 
-    // the structure to pass common parameters to various read() methods of OksData and OksObject class
+  void init();
+};
 
-  struct ReadFileParams {
-    OksFile* f;
-    OksXmlInputStream& s;
-    OksAliasTable * alias_table;
-    OksKernel * oks_kernel;
-    char format;
-    ReloadObjects * reload_objects;
-    const char * object_tag;
-    size_t object_tag_len;
-    OksObject * owner;
-    std::string tmp;
+// 17-SEP-2009: for compatibility with previous OKS versions
+// FIXME: remove later ...
 
-    ReadFileParams(OksFile* f_, OksXmlInputStream& s_, OksAliasTable * t_, OksKernel * k_, char m_, ReloadObjects * l_) :
-      f(f_), s(s_), alias_table(t_), oks_kernel(k_), format(m_), reload_objects(l_) { init(); }
+class Date
+{
 
-    void init();
-  };
+public:
+  Date(const char* s) { set(s); } // dd/mm/[yy]yy
 
+  virtual ~Date() { ; }
 
-  // 17-SEP-2009: for compatibility with previous OKS versions
-  // FIXME: remove later ...
+  void set(const char*);
 
-  class Date {
+  long year() const { return p_tm.tm_year; }
+  unsigned short month() const { return p_tm.tm_mon; }
+  unsigned short day() const { return p_tm.tm_mday; }
 
-    public:
+  virtual std::string str() const;
 
-      Date		(const char * s) {set(s);} // dd/mm/[yy]yy
+protected:
+  struct tm p_tm;
+};
 
-      virtual ~Date() { ; }
+std::ostream&
+operator<<(std::ostream&, const Date&);
 
-      void		set(const char *);
+class Time : public Date
+{
 
-      long		year() const {return p_tm.tm_year;}
-      unsigned short	month() const {return p_tm.tm_mon;}
-      unsigned short	day() const {return p_tm.tm_mday;}
+public:
+  Time(const char* s)
+    : Date(s)
+  { /*set(s);*/
+  } // dd/mm/[yy]yy hh:mm[:ss]
 
-      virtual std::string str() const;
+  virtual ~Time() { ; }
 
+  unsigned short hour() const { return p_tm.tm_hour; }
+  unsigned short min() const { return p_tm.tm_min; }
+  unsigned short sec() const { return p_tm.tm_sec; }
 
-    protected:
+  virtual std::string str() const;
+};
 
-      struct tm	p_tm;
-
-  };
-
-  std::ostream& operator<<(std::ostream&, const Date&);
-
-
-  class Time : public Date {
-
-    public:
-
-      Time		(const char * s) : Date(s) {/*set(s);*/} // dd/mm/[yy]yy hh:mm[:ss]
-
-      virtual ~Time() { ; }
-
-      unsigned short	hour() const {return  p_tm.tm_hour;}
-      unsigned short	min() const {return  p_tm.tm_min;}
-      unsigned short	sec() const {return  p_tm.tm_sec;}
-
-      virtual std::string str() const;
-  };
-
-  std::ostream& operator<<(std::ostream&, const Time&);
-
+std::ostream&
+operator<<(std::ostream&, const Time&);
 
 } // namespace oks
 } // namespace dunedaq
