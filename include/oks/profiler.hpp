@@ -10,7 +10,6 @@ namespace oks {
 
 class OksKernel;
 
-
 class OksProfiler
 {
 public:
@@ -53,33 +52,25 @@ public:
     QueryOperatorFrom
   };
 
-  friend std::ostream&
-  operator<<(std::ostream&, const OksProfiler&);
+  friend std::ostream& operator<<(std::ostream&, const OksProfiler&);
 
-  const std::chrono::time_point<std::chrono::steady_clock>
-  start_time_point() const
-  {
-    return p_start_time_point;
-  }
+  const std::chrono::time_point<std::chrono::steady_clock> start_time_point() const { return p_start_time_point; }
 
 private:
   OksProfiler();
 
-  void
-  Start(OksProfiler::FunctionID, std::chrono::time_point<std::chrono::steady_clock>&);
+  void Start(OksProfiler::FunctionID, std::chrono::time_point<std::chrono::steady_clock>&);
 
-  void
-  Stop(OksProfiler::FunctionID, const std::chrono::time_point<std::chrono::steady_clock>&);
+  void Stop(OksProfiler::FunctionID, const std::chrono::time_point<std::chrono::steady_clock>&);
 
   std::chrono::time_point<std::chrono::steady_clock> p_start_time_point;
 
-  double t_total[(unsigned) OksProfiler::QueryOperatorFrom + 1];
-  unsigned long c_total[(unsigned) OksProfiler::QueryOperatorFrom + 1];
+  double t_total[(unsigned)OksProfiler::QueryOperatorFrom + 1];
+  unsigned long c_total[(unsigned)OksProfiler::QueryOperatorFrom + 1];
 
   friend class OksKernel;
   friend class OksFunctionProfiler;
 };
-
 
 class OksFunctionProfiler
 {
@@ -88,7 +79,7 @@ public:
   ~OksFunctionProfiler();
 
 private:
-  const OksKernel *kernel;
+  const OksKernel* kernel;
   OksProfiler::FunctionID func_id;
   std::chrono::time_point<std::chrono::steady_clock> p_start_time_point;
 };

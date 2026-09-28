@@ -21,43 +21,48 @@
 
 using namespace dunedaq::oks;
 
+int
+main(int argc, char** argv)
+{
+  enum Exitcode : int
+  {
+    SUCCESS,
+    BADCMD,
+    NOFILE,
+    LOADFAIL,
+    BADRELATIONSHIP,
+    UNRESOLVED,
+    MISSING_INCLUDE
+  };
 
-
-int main(int argc, char **argv) {
-  enum Exitcode : int {SUCCESS, BADCMD, NOFILE, LOADFAIL,
-    BADRELATIONSHIP, UNRESOLVED,
-    MISSING_INCLUDE};
-
-  CLI::App app{"Check consistency of OKS schema file\n"+
-    fmt::format("Return codes: {} Success, file is OK\n", Exitcode::SUCCESS)+
-    fmt::format("              {} Bad command line\n", Exitcode::BADCMD)+
-    fmt::format("              {} Failed to find file\n", Exitcode::NOFILE)+
-    fmt::format("              {} Failed to load file -- invalid schema\n", Exitcode::LOADFAIL)+
-    fmt::format("              {} File contains relationship to non loaded class\n", Exitcode::BADRELATIONSHIP)+
-    fmt::format("              {} File contains object with relationship to non loaded class/object\n", Exitcode::UNRESOLVED)+
+  CLI::App app{
+    "Check consistency of OKS schema file\n" +
+    fmt::format("Return codes: {} Success, file is OK\n", Exitcode::SUCCESS) +
+    fmt::format("              {} Bad command line\n", Exitcode::BADCMD) +
+    fmt::format("              {} Failed to find file\n", Exitcode::NOFILE) +
+    fmt::format("              {} Failed to load file -- invalid schema\n", Exitcode::LOADFAIL) +
+    fmt::format("              {} File contains relationship to non loaded class\n", Exitcode::BADRELATIONSHIP) +
+    fmt::format("              {} File contains object with relationship to non loaded class/object\n",
+                Exitcode::UNRESOLVED) +
     fmt::format("              {} File refers to class in file not directly included\n", Exitcode::MISSING_INCLUDE)
   };
 
   std::string filename;
-  app.add_option("-f,--file", filename, "Schema file")
-    ->required();
+  app.add_option("-f,--file", filename, "Schema file")->required();
 
   CLI11_PARSE(app, argc, argv);
 
   OksKernel kernel;
-  OksFile* file{nullptr};
+  OksFile* file{ nullptr };
   try {
     file = kernel.load_file(filename);
-  }
-  catch (FailedLoadFile& fail) {
+  } catch (FailedLoadFile& fail) {
     TLOG() << fail.what() << "\n";
     return Exitcode::LOADFAIL;
-  }
-  catch (CanNotOpenFile& fail) {
+  } catch (CanNotOpenFile& fail) {
     TLOG() << fail.what() << "\n";
     return Exitcode::NOFILE;
-  }
-  catch (std::exception& exc) {
+  } catch (std::exception& exc) {
     TLOG() << exc.what() << "\n";
     return Exitcode::LOADFAIL;
   }
@@ -73,7 +78,7 @@ int main(int argc, char **argv) {
     TLOG_DEBUG(2) << "direct inserting " << ifile << "\n";
   }
 
-  Exitcode result=Exitcode::SUCCESS;
+  Exitcode result = Exitcode::SUCCESS;
 
   if (filename.ends_with(".schema.xml")) {
     // Check classes defined in this schema file
@@ -87,24 +92,21 @@ int main(int argc, char **argv) {
       auto cfile = oks_class->get_file()->get_short_file_name();
       if (cfile != file->get_short_file_name() && !includes.contains(cfile)) {
         TLOG() << "Error " << filename << " misses include of " << cfile << " required by " << name;
-        if (result==Exitcode::SUCCESS) {
-          result =  Exitcode::MISSING_INCLUDE;
+        if (result == Exitcode::SUCCESS) {
+          result = Exitcode::MISSING_INCLUDE;
         }
       }
       auto relationships = oks_class->direct_relationships();
       if (relationships != nullptr) {
-        for (auto rel: *relationships) {
+        for (auto rel : *relationships) {
           auto rel_class = rel->get_class_type();
           if (rel_class == nullptr) {
-            TLOG() << "Error class '" << name
-                   << "' has relationship '" << rel->get_name()
-                   << "' to a class '" << rel->get_type()
-                   << "' that is not loaded\n";
-            if (result==Exitcode::SUCCESS) {
-              result =  Exitcode::BADRELATIONSHIP;
+            TLOG() << "Error class '" << name << "' has relationship '" << rel->get_name() << "' to a class '"
+                   << rel->get_type() << "' that is not loaded\n";
+            if (result == Exitcode::SUCCESS) {
+              result = Exitcode::BADRELATIONSHIP;
             }
           }
-
         }
       }
       // Could check super-classes but we wouldn't have got past the
@@ -119,10 +121,9 @@ int main(int argc, char **argv) {
       }
       auto ofile_name = relobj->get_file()->get_short_file_name();
       if (file->get_short_file_name() != ofile_name && !includes.contains(ofile_name)) {
-        TLOG() << "Error " << filename << " misses include of " << ofile_name
-               << " required by " << relobj->GetId();
-        if (result==Exitcode::SUCCESS) {
-          result =  Exitcode::MISSING_INCLUDE;
+        TLOG() << "Error " << filename << " misses include of " << ofile_name << " required by " << relobj->GetId();
+        if (result == Exitcode::SUCCESS) {
+          result = Exitcode::MISSING_INCLUDE;
         }
       }
     };
@@ -134,11 +135,10 @@ int main(int argc, char **argv) {
       auto oks_class = obj->GetClass();
       auto cfile = oks_class->get_file()->get_short_file_name();
       if (!includes.contains(cfile)) {
-        TLOG() << "Error " << filename << " misses include of " << cfile
-               << " required by " << obj->GetId()
+        TLOG() << "Error " << filename << " misses include of " << cfile << " required by " << obj->GetId()
                << " of class " << oks_class->get_name();
-        if (result==Exitcode::SUCCESS) {
-          result =  Exitcode::MISSING_INCLUDE;
+        if (result == Exitcode::SUCCESS) {
+          result = Exitcode::MISSING_INCLUDE;
         }
       }
 
@@ -146,14 +146,13 @@ int main(int argc, char **argv) {
       // either defined in this file or one that is directly included
       auto relationships = oks_class->all_relationships();
       if (relationships != nullptr) {
-        for (auto rel: *relationships) {
+        for (auto rel : *relationships) {
           auto relval = obj->GetRelationshipValue(rel->get_name());
           if (relval == nullptr) {
             continue;
           }
           if (rel->get_high_cardinality_constraint() == OksRelationship::Many) {
-            for(OksData::List::iterator iter = relval->data.LIST->begin();
-                iter != relval->data.LIST->end(); ++iter) {
+            for (OksData::List::iterator iter = relval->data.LIST->begin(); iter != relval->data.LIST->end(); ++iter) {
               check_relationship(*iter);
             }
           } else {
@@ -167,7 +166,7 @@ int main(int argc, char **argv) {
 
   auto status = kernel.get_bind_objects_status();
   if (!status.empty()) {
-    if (result==Exitcode::SUCCESS) {
+    if (result == Exitcode::SUCCESS) {
       result = Exitcode::UNRESOLVED;
     }
   }

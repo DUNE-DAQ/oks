@@ -1,4 +1,4 @@
-/**	
+/**
  *  \file oks/attribute.h
  *
  *  This file is part of the OKS package.
@@ -21,10 +21,8 @@
 namespace dunedaq {
 namespace oks {
 
-
 class OksXmlOutputStream;
 class OksXmlInputStream;
-
 
 /// @addtogroup oks
 
@@ -41,38 +39,28 @@ class OksXmlInputStream;
 class OksRange
 {
 public:
+  OksRange(const std::string& range, OksAttribute* a) { reset(range, a); }
 
-  OksRange(const std::string& range, OksAttribute * a)
-  {
-    reset(range, a);
-  }
+  void reset(const std::string& range, OksAttribute* a);
 
-  void
-  reset(const std::string& range, OksAttribute * a);
+  bool validate(const OksData&) const;
 
-  bool
-  validate(const OksData&) const;
-
-  inline bool
-  is_empty()
+  inline bool is_empty()
   {
     return (m_less.empty() && m_equal.empty() && m_interval.empty() && m_great.empty() && m_like.empty());
   }
 
 private:
-
   std::string m_range;
 
   std::list<OksData> m_less;
   std::list<OksData> m_equal;
-  std::list<std::pair<OksData,OksData>> m_interval;
+  std::list<std::pair<OksData, OksData>> m_interval;
   std::list<OksData> m_great;
   std::list<boost::regex> m_like;
 
 private:
-
-  inline void
-  clear()
+  inline void clear()
   {
     m_range.clear();
 
@@ -84,19 +72,18 @@ private:
   }
 };
 
+/// @addtogroup oks
 
-  /// @addtogroup oks
-
-  /**
-   *    @ingroup oks
-   *
-   *	\brief OKS attribute class.
-   *	
-   *  	This class implements OKS attribute that is a part of an OKS class.
-   *  	An attribute has name, type, range, initial value and description.
-   *  	An attribute can be single-value or multi-value.
-   *  	An attribute can be non-null.
-   */
+/**
+ *    @ingroup oks
+ *
+ *	\brief OKS attribute class.
+ *
+ *  	This class implements OKS attribute that is a part of an OKS class.
+ *  	An attribute has name, type, range, initial value and description.
+ *  	An attribute can be single-value or multi-value.
+ *  	An attribute can be non-null.
+ */
 
 class OksAttribute
 {
@@ -107,15 +94,14 @@ class OksAttribute
   friend struct OksData;
 
 public:
-
   /** Format for integer representation (OKS data file, print output) */
 
-  enum Format {
+  enum Format
+  {
     Oct = 8,
     Dec = 10,
     Hex = 16
   };
-
 
   /**
    *  \brief OKS attribute simple constructor.
@@ -129,8 +115,7 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  OksAttribute(const std::string& name, OksClass * p = nullptr);
-
+  OksAttribute(const std::string& name, OksClass* p = nullptr);
 
   /**
    *  \brief OKS attribute complete constructor.
@@ -151,8 +136,15 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  OksAttribute(const std::string& name, const std::string& type, bool is_mv, const std::string& range, const std::string& init_v, const std::string& description, bool no_null, Format format = Dec, OksClass * p = nullptr);
-
+  OksAttribute(const std::string& name,
+               const std::string& type,
+               bool is_mv,
+               const std::string& range,
+               const std::string& init_v,
+               const std::string& description,
+               bool no_null,
+               Format format = Dec,
+               OksClass* p = nullptr);
 
   ~OksAttribute()
   {
@@ -162,16 +154,10 @@ public:
     clean_range();
   }
 
+  bool operator==(const class OksAttribute&) const;                    /// equality operator
+  friend std::ostream& operator<<(std::ostream&, const OksAttribute&); /// out stream operator
 
-  bool operator==(const class OksAttribute&) const;                      /// equality operator
-  friend  std::ostream& operator<<(std::ostream&, const OksAttribute&);  /// out stream operator
-
-  const std::string&
-  get_name() const noexcept
-  {
-    return p_name;
-  }
-
+  const std::string& get_name() const noexcept { return p_name; }
 
   /**
    *  \brief Set attribute name.
@@ -183,9 +169,7 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_name(const std::string& name);
-
+  void set_name(const std::string& name);
 
   /**
    *  \brief Get attribute string type.
@@ -193,9 +177,7 @@ public:
    *  The type meaning is described by the set_type() method.
    */
 
-  const std::string&
-  get_type() const noexcept;
-
+  const std::string& get_type() const noexcept;
 
   /**
    *  \brief Set attribute type.
@@ -224,9 +206,7 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_type(const std::string& type, bool skip_init = false);
-
+  void set_type(const std::string& type, bool skip_init = false);
 
   /**
    *  \brief Get attribute range.
@@ -234,12 +214,7 @@ public:
    *  The range meaning is described by the set_range() method.
    */
 
-  const std::string&
-  get_range() const noexcept
-  {
-    return p_range;
-  }
-
+  const std::string& get_range() const noexcept { return p_range; }
 
   /**
    *  \brief Set attribute range.
@@ -265,9 +240,7 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_range(const std::string& range);
-
+  void set_range(const std::string& range);
 
   /**
    *  \brief Converts string to attribute OKS data type.
@@ -279,9 +252,7 @@ public:
    *  \return        the OKS data type; return OksData::unknown_type if the type cannot be detected
    */
 
-  static OksData::Type
-  get_data_type(const std::string& type) noexcept;
-
+  static OksData::Type get_data_type(const std::string& type) noexcept;
 
   /**
    *  \brief Converts string to attribute OKS data type (fast version).
@@ -294,18 +265,11 @@ public:
    *  \return        the OKS data type; return OksData::unknown_type if the type cannot be detected
    */
 
-  static OksData::Type
-  get_data_type(const char * type, size_t len) noexcept;
-
+  static OksData::Type get_data_type(const char* type, size_t len) noexcept;
 
   /** Get attribute OKS data type. */
 
-  OksData::Type
-  get_data_type() const noexcept
-  {
-    return p_data_type;
-  }
-
+  OksData::Type get_data_type() const noexcept { return p_data_type; }
 
   /**
    *  \brief Get attribute format.
@@ -313,12 +277,7 @@ public:
    *  The format meaning is described by the set_format() method.
    */
 
-  Format
-  get_format() const noexcept
-  {
-    return p_format;
-  }
-
+  Format get_format() const noexcept { return p_format; }
 
   /**
    *  \brief Set attribute format.
@@ -339,30 +298,19 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_format(Format format);
-
+  void set_format(Format format);
 
   /** The method returns true, if the attribute is an integer number. */
 
-  bool
-  is_integer() const noexcept;
-
+  bool is_integer() const noexcept;
 
   /** The method returns true, if the attribute is a number. */
 
-  bool
-  is_number() const noexcept;
-
+  bool is_number() const noexcept;
 
   /** The method returns true, if the attribute is multi-values. */
 
-  bool
-  get_is_multi_values() const noexcept
-  {
-    return p_multi_values;
-  }
-
+  bool get_is_multi_values() const noexcept { return p_multi_values; }
 
   /**
    *  \brief Set attribute is a single-value or multi-value.
@@ -374,18 +322,11 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_is_multi_values(bool multi_values);
-
+  void set_is_multi_values(bool multi_values);
 
   /** The attribute initialisation value. */
 
-  const std::string&
-  get_init_value() const noexcept
-  {
-    return p_init_value;
-  }
-
+  const std::string& get_init_value() const noexcept { return p_init_value; }
 
   /**
    *  \brief Set attribute initialisation value.
@@ -397,9 +338,7 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_init_value(const std::string& init_value);
-
+  void set_init_value(const std::string& init_value);
 
   /**
    *  \brief Return list of initial values for mv-attribute.
@@ -407,18 +346,11 @@ public:
    *  \throw oks::AttributeReadError is thrown if initial values became invalid (may happen for class_type attributes),
    */
 
-  std::list<std::string>
-  get_init_values() const;
-
+  std::list<std::string> get_init_values() const;
 
   /** Return description of attribute */
 
-  const std::string&
-  get_description() const noexcept
-  {
-    return p_description;
-  }
-
+  const std::string& get_description() const noexcept { return p_description; }
 
   /**
    *  \brief Set attribute description.
@@ -428,18 +360,11 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-  void
-  set_description(const std::string& description);
-
+  void set_description(const std::string& description);
 
   /** Return true, if the attribute's value cannot be equal to null. */
 
-  bool
-  get_is_no_null() const noexcept
-  {
-    return p_no_null;
-  }
-
+  bool get_is_no_null() const noexcept { return p_no_null; }
 
   /**
    *  \brief Set attribute is-no-null property.
@@ -451,9 +376,7 @@ public:
    *  \throw oks::exception is thrown in case of problems.
    */
 
-
-  void
-  set_is_no_null(bool no_null);
+  void set_is_no_null(bool no_null);
 
   /**
    *  \brief Finds token in given range.
@@ -463,9 +386,7 @@ public:
    *  \return The method returns true, if the token is found in the range
    */
 
-
-  static bool
-  find_token(const char * token, const char * range) noexcept;
+  static bool find_token(const char* token, const char* range) noexcept;
 
   /**
    *  \brief Finds index of given string in attribute's range.
@@ -478,23 +399,17 @@ public:
    *  \return The method returns 0 or positive integer index, if the string was found, and negative integer, if not.
    */
 
-
-  int
-  get_enum_index(const char * s, size_t length) const noexcept;
+  int get_enum_index(const char* s, size_t length) const noexcept;
 
   /**
    *  \brief See get_enum_index(const char *, size_t);
    */
 
-  int
-  get_enum_index(const std::string& s) const noexcept
-  {
-    return get_enum_index(s.data(), s.length());
-  }
-
+  int get_enum_index(const std::string& s) const noexcept { return get_enum_index(s.data(), s.length()); }
 
   /**
-   *  \brief Returns pointer on internal enumerator data equal to given string, if such string is defined in attribute's range.
+   *  \brief Returns pointer on internal enumerator data equal to given string, if such string is defined in attribute's
+   * range.
    *
    *  The method can only be applied, if attribute is enumeration.
    *  The returned pointer is valid unless the attribute is not destroyed or modified.
@@ -507,20 +422,13 @@ public:
    *  \throw std::exception is thrown, if no such string found.
    */
 
-  const std::string *
-  get_enum_value(const char * s, size_t length) const;
-
+  const std::string* get_enum_value(const char* s, size_t length) const;
 
   /**
    *  \brief See get_enum_value(const char *, size_t).
    */
 
-  const std::string *
-  get_enum_value(const std::string& s) const
-  {
-    return get_enum_value(s.data(), s.length());
-  }
-
+  const std::string* get_enum_value(const std::string& s) const { return get_enum_value(s.data(), s.length()); }
 
   /**
    *  \brief Returns index of given enumeration in attribute's range (0 or positive integer value).
@@ -532,57 +440,47 @@ public:
    *  \return The method returns integer value of given enumeration.
    */
 
-
-  uint16_t
-  get_enum_value(const OksData& d) const noexcept;
+  uint16_t get_enum_value(const OksData& d) const noexcept;
 
   /**
    *  \brief Returns enumeration string by value.
    *
-   *  The method can only be applied, if attribute is enumeration and the index is within number of items in enumeration range.
+   *  The method can only be applied, if attribute is enumeration and the index is within number of items in enumeration
+   * range.
    *
    *  \param idx         enumeration index
    *
    *  \return The method returns pointer on string corresponding to enumeration integer value.
    */
 
-
-  const std::string *
-  get_enum_string(uint16_t idx) const noexcept
-  {
-    return &(*p_enumerators)[idx];
-  }
-
+  const std::string* get_enum_string(uint16_t idx) const noexcept { return &(*p_enumerators)[idx]; }
 
   /**
    *  Valid attribute types
    */
 
-  static const char * bool_type;
-  static const char * s8_int_type;
-  static const char * u8_int_type;
-  static const char * s16_int_type;
-  static const char * u16_int_type;
-  static const char * s32_int_type;
-  static const char * u32_int_type;
-  static const char * s64_int_type;
-  static const char * u64_int_type;
-  static const char * float_type;
-  static const char * double_type;
-  static const char * date_type;
-  static const char * time_type;
-  static const char * string_type;
-  static const char * uid_type;
-  static const char * enum_type;
-  static const char * class_type;
+  static const char* bool_type;
+  static const char* s8_int_type;
+  static const char* u8_int_type;
+  static const char* s16_int_type;
+  static const char* u16_int_type;
+  static const char* s32_int_type;
+  static const char* u32_int_type;
+  static const char* s64_int_type;
+  static const char* u64_int_type;
+  static const char* float_type;
+  static const char* double_type;
+  static const char* date_type;
+  static const char* time_type;
+  static const char* string_type;
+  static const char* uid_type;
+  static const char* enum_type;
+  static const char* class_type;
 
-  static Format
-  str2format(const char *) noexcept;
-  static const char *
-  format2str(Format) noexcept;
+  static Format str2format(const char*) noexcept;
+  static const char* format2str(Format) noexcept;
 
 private:
-
   std::string p_name;
   std::string p_range;
   OksData::Type p_data_type;
@@ -591,53 +489,48 @@ private:
   std::string p_init_value;
   Format p_format;
   std::string p_description;
-  OksClass * p_class;
-  std::vector<std::string> * p_enumerators;
-  OksRange * p_range_obj;
+  OksClass* p_class;
+  std::vector<std::string>* p_enumerators;
+  OksRange* p_range_obj;
   OksData p_init_data;
   OksData p_empty_init_data;
   bool p_ordered;
 
-  inline void
-  __set_data_type(const char * t, size_t len) noexcept;
+  inline void __set_data_type(const char* t, size_t len) noexcept;
 
   /** Private constructor used by OksData */
 
-  OksAttribute(OksData::Type t, const OksClass * c) noexcept :
-      p_data_type(t), p_class(const_cast<OksClass*>(c)), p_enumerators(nullptr), p_range_obj(nullptr), p_ordered(false)
+  OksAttribute(OksData::Type t, const OksClass* c) noexcept
+    : p_data_type(t)
+    , p_class(const_cast<OksClass*>(c))
+    , p_enumerators(nullptr)
+    , p_range_obj(nullptr)
+    , p_ordered(false)
   {
     ;
   }
 
-
   /** Private constructor from XML stream */
 
-  OksAttribute(OksXmlInputStream&, OksClass *);
-
+  OksAttribute(OksXmlInputStream&, OksClass*);
 
   /** Private method to save in XML stream */
 
-  void
-  save(OksXmlOutputStream&) const;
+  void save(OksXmlOutputStream&) const;
 
-  void
-  init_enum();
+  void init_enum();
 
-  void
-  init_range();
+  void init_range();
 
-  inline void
-  clean_range()
+  inline void clean_range()
   {
-    if (p_range_obj)
-      {
-        delete p_range_obj;
-        p_range_obj = nullptr;
-      }
+    if (p_range_obj) {
+      delete p_range_obj;
+      p_range_obj = nullptr;
+    }
   }
 
-  void
-  set_init_data()
+  void set_init_data()
   {
     p_init_data.set_init_value(this, false);
     p_empty_init_data.set_init_value(this, true);
@@ -658,17 +551,16 @@ private:
   static const char init_value_xml_attr[];
   static const char is_not_null_xml_attr[];
   static const char ordered_xml_attr[];
-
 };
 
 inline void
-OksAttribute::__set_data_type(const char * t, size_t len) noexcept
+OksAttribute::__set_data_type(const char* t, size_t len) noexcept
 {
   p_data_type = get_data_type(t, len);
 }
 
 inline void
-OksData::SetE(const char *s, size_t len, const OksAttribute *a)
+OksData::SetE(const char* s, size_t len, const OksAttribute* a)
 {
   Clear();
   type = enum_type;
@@ -676,7 +568,7 @@ OksData::SetE(const char *s, size_t len, const OksAttribute *a)
 }
 
 inline void
-OksData::SetE(const std::string &s, const OksAttribute *a)
+OksData::SetE(const std::string& s, const OksAttribute* a)
 {
   Clear();
   type = enum_type;
@@ -684,7 +576,7 @@ OksData::SetE(const std::string &s, const OksAttribute *a)
 }
 
 inline void
-OksData::SetE(const OksAttribute *a)
+OksData::SetE(const OksAttribute* a)
 {
   Clear();
   type = enum_type;
@@ -692,7 +584,7 @@ OksData::SetE(const OksAttribute *a)
 }
 
 inline void
-OksData::SetE(const OksString &s, const OksAttribute *a)
+OksData::SetE(const OksString& s, const OksAttribute* a)
 {
   Clear();
   type = enum_type;
@@ -702,7 +594,7 @@ OksData::SetE(const OksString &s, const OksAttribute *a)
 // profit from C++ string object vs. "char *" to create new string (string_type) or known string length (enum_type)
 
 inline void
-OksData::ReadFrom(const std::string& s, const OksAttribute * a)
+OksData::ReadFrom(const std::string& s, const OksAttribute* a)
 {
   if (type == OksData::string_type)
     data.STRING = new OksString(s);
