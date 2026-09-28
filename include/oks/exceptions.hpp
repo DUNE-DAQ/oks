@@ -1,3 +1,8 @@
+// DUNE DAQ modification notice:
+// This file has been modified from the original ATLAS oks source for the DUNE DAQ project.
+// Fork baseline commit: oks-08-03-04 (2022-04-14).
+// Renamed since fork: yes (from oks/exceptions.h to include/oks/exceptions.hpp).
+
 #ifndef OKS_EXCEPTIONS_H
 #define OKS_EXCEPTIONS_H
 
